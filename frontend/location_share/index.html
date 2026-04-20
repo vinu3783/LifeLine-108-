@@ -1,417 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency - Share Your Location</title>
+    <title>LifeLine 108+ — Share Your Location</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red:      #dc2626;
+            --red-dark: #b91c1c;
+            --red-light:#fef2f2;
+            --navy:     #0f172a;
+            --slate:    #1e293b;
+            --muted:    #64748b;
+            --border:   #e2e8f0;
+            --bg:       #f8fafc;
+            --white:    #ffffff;
+            --green:    #16a34a;
+            --amber:    #d97706;
+            --radius:   14px;
+            --shadow:   0 4px 24px rgba(15,23,42,.10);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1a1a2e 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
+            justify-content: center;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
 
-        .header {
-            background-color: #ff4040;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            margin: -20px -20px 20px -20px;
+        /* ── brand bar ── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            color: var(--white);
         }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: var(--red);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+        .brand-sub  { font-size: 12px; color: #94a3b8; font-weight: 500; }
 
-        .map-container {
-            width: 100%;
-            height: 300px;
-            margin: 20px 0;
-            border-radius: 10px;
+        /* ── card ── */
+        .card {
+            width: 100%; max-width: 520px;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
+        .card-header {
+            background: linear-gradient(135deg, var(--red) 0%, #9f1239 100%);
+            padding: 28px 28px 24px;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
         }
-
-        .btn {
-            background-color: #ff4040;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 250px;
-        }
-
-        .btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .status {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-
-        .warning {
-            background-color: #fff3cd;
-            color: #856404;
-            display: block;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #ff4040;
+        .card-header::after {
+            content: '';
+            position: absolute; right: -30px; top: -30px;
+            width: 120px; height: 120px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
+            background: rgba(255,255,255,.08);
         }
+        .card-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .card-header p  { font-size: 13px; opacity: .85; font-weight: 400; }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+        .card-body { padding: 28px; }
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
+        /* connectivity alert */
         .connectivity-alert {
-            background-color: #ff4040;
-            color: white;
-            padding: 10px;
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            padding: 14px 16px;
             margin-bottom: 20px;
-            border-radius: 5px;
+            font-size: 13px;
+            color: #92400e;
+        }
+        .connectivity-alert.show { display: flex; }
+        .connectivity-alert i { margin-top: 1px; color: var(--amber); flex-shrink: 0; }
+
+        /* loading */
+        .loading-box {
             display: none;
-        }
-
-        .sms-instructions {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .sms-number {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .secondary-btn {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 24px 0;
+            color: var(--muted);
             font-size: 14px;
-            border-radius: 5px;
+            font-weight: 500;
+        }
+        .loading-box.show { display: flex; }
+        .spinner {
+            width: 44px; height: 44px;
+            border: 4px solid #f1f5f9;
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin .9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* map */
+        .map-wrap {
+            display: none;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 260px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .map-wrap.show { display: block; }
+        #map { width: 100%; height: 100%; }
+
+        /* description */
+        .desc {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .desc strong { color: var(--navy); }
+
+        /* buttons */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--red), #9f1239);
+            color: var(--white);
+            box-shadow: 0 4px 14px rgba(220,38,38,.35);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(220,38,38,.45);
+        }
+        .btn-primary:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            padding: 10px 16px;
             margin-top: 10px;
         }
+        .btn-secondary:hover { background: #f1f5f9; color: var(--navy); }
+
+        /* status messages */
+        .status-msg {
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+        .status-msg.show   { display: flex; }
+        .status-msg.success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+        .status-msg.error   { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+        .status-msg.warning { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+        .status-msg i { margin-top:1px; flex-shrink:0; }
+
+        /* confirmation */
+        .confirmation {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 20px 0 4px;
+        }
+        .confirmation.show { display: flex; }
+        .conf-icon {
+            width: 56px; height: 56px;
+            background: #f0fdf4;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--green);
+        }
+        .confirmation h3 { font-size: 16px; font-weight: 700; color: var(--navy); }
+        .confirmation p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+        /* sms fallback */
+        .sms-box {
+            display: none;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .sms-box.show { display: block; }
+        .sms-box h4 {
+            font-size: 14px; font-weight: 700; color: var(--navy);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sms-box p { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 8px; }
+        .sms-number {
+            font-size: 26px; font-weight: 800;
+            color: var(--navy);
+            letter-spacing: 1px;
+            margin: 8px 0;
+        }
+
+        /* footer link */
+        .back-link {
+            margin-top: 28px;
+            color: #64748b;
+            font-size: 13px;
+            text-decoration: none;
+            display: flex; align-items: center; gap: 6px;
+            transition: color .2s;
+        }
+        .back-link:hover { color: var(--white); }
+
+        /* pulse animation on button */
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(220,38,38,.45); }
+            70%  { box-shadow: 0 0 0 14px rgba(220,38,38,0); }
+            100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+        }
+        .btn-pulse { animation: pulse-ring 1.8s ease-out infinite; }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Emergency Response</h1>
-        </div>
-        <h2>Please Share Your Location</h2>
-        <p>To send help to your exact location, we need your GPS coordinates. Please click the button below to share
-            your location.</p>
 
-        <!-- Connectivity Alert -->
-        <div class="connectivity-alert" id="connectivityAlert">
-            <strong>⚠️ Poor Connection Detected</strong>
-            <p id="connectionStatus">You appear to be offline.</p>
-        </div>
-
-        <div class="loading" id="gettingLocation">
-            <div class="spinner"></div>
-            <p>Getting your location...</p>
-        </div>
-
-        <div class="map-container" id="mapContainer" style="display: none;">
-            <div id="map"></div>
-        </div>
-
-        <button class="btn" id="shareLocationBtn">Share My Exact Location</button>
-
-        <!-- SMS Fallback Button -->
-        <button class="secondary-btn" id="smsFallbackBtn" style="display: none;">Use SMS Instead</button>
-
-        <div class="status" id="statusMessage"></div>
-
-        <div id="confirmation" style="display: none;">
-            <h3>Help is on the way!</h3>
-            <p>An ambulance has been dispatched to your location. Please stay where you are.</p>
-        </div>
-
-        <!-- SMS Instructions -->
-        <div class="sms-instructions" id="smsInstructions">
-            <h3>Share Location via SMS</h3>
-            <p>If you're having trouble sharing your location, text the word "LOCATION" to:</p>
-            <p class="sms-number">{{ emergency_number }}</p>
-            <p>Most phones will automatically send your GPS coordinates when you reply with "LOCATION".</p>
-            <p>You can also text "HELP" followed by your address or a nearby landmark.</p>
+    <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-truck-medical"></i></div>
+        <div>
+            <div class="brand-name">LifeLine 108+</div>
+            <div class="brand-sub">Emergency Response System</div>
         </div>
     </div>
 
-    <div style="margin-top: 20px;">
-        <a href="/" style="text-decoration: none; color: #7f8c8d; font-weight: bold;">&larr; Back to Home</a>
+    <div class="card">
+        <div class="card-header">
+            <h1><i class="fa-solid fa-location-crosshairs" style="margin-right:8px;"></i>Share Your Location</h1>
+            <p>Help us reach you faster — tap the button below to share your GPS coordinates.</p>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Connectivity Alert -->
+            <div class="connectivity-alert" id="connectivityAlert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong>Poor Connection Detected</strong>
+                    <div id="connectionStatus" style="margin-top:2px;">You appear to be offline.</div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading-box" id="gettingLocation">
+                <div class="spinner"></div>
+                <span>Acquiring your GPS location…</span>
+            </div>
+
+            <!-- Map -->
+            <div class="map-wrap" id="mapContainer">
+                <div id="map"></div>
+            </div>
+
+            <p class="desc">
+                An ambulance team is standing by. <strong>Tap "Share My Location"</strong> to send your exact coordinates so help can reach you immediately.
+            </p>
+
+            <button class="btn btn-primary btn-pulse" id="shareLocationBtn">
+                <i class="fa-solid fa-location-arrow"></i>
+                Share My Exact Location
+            </button>
+
+            <button class="btn btn-secondary" id="smsFallbackBtn" style="display:none;">
+                <i class="fa-solid fa-message"></i> Use SMS Instead
+            </button>
+
+            <!-- Status Message -->
+            <div class="status-msg" id="statusMessage">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="statusText"></span>
+            </div>
+
+            <!-- Confirmation -->
+            <div class="confirmation" id="confirmation">
+                <div class="conf-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <h3>Help is on the way!</h3>
+                <p>An ambulance has been dispatched to your location. Please stay where you are and keep your phone accessible.</p>
+            </div>
+
+            <!-- SMS Instructions -->
+            <div class="sms-box" id="smsInstructions">
+                <h4><i class="fa-solid fa-mobile-screen"></i> Share via SMS</h4>
+                <p>If internet sharing fails, text <strong>LOCATION</strong> to the number below. Your phone will automatically send GPS coordinates.</p>
+                <div class="sms-number">{{ emergency_number }}</div>
+                <p>Or text <strong>HELP</strong> followed by your address or a nearby landmark.</p>
+            </div>
+
+        </div>
     </div>
-    </div>
+
+    <a class="back-link" href="/"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
     <script>
-        // Get URL parameters
-        const params = new URLSearchParams(window.location.pathname);
-        const locationLinkId = window.location.pathname.split('/').pop();
-        const emergencyCallId = "{{ emergency_call_id }}";
-        const emergencyNumber = "{{ emergency_number }}";
+        const locationLinkId   = window.location.pathname.split('/').pop();
+        const emergencyCallId  = "{{ emergency_call_id }}";
+        const emergencyNumber  = "{{ emergency_number }}";
 
-        // Elements
-        const shareLocationBtn = document.getElementById('shareLocationBtn');
-        const smsFallbackBtn = document.getElementById('smsFallbackBtn');
-        const statusMessage = document.getElementById('statusMessage');
-        const gettingLocation = document.getElementById('gettingLocation');
-        const mapContainer = document.getElementById('mapContainer');
-        const confirmation = document.getElementById('confirmation');
-        const smsInstructions = document.getElementById('smsInstructions');
-        const connectivityAlert = document.getElementById('connectivityAlert');
-        const connectionStatus = document.getElementById('connectionStatus');
+        const shareLocationBtn   = document.getElementById('shareLocationBtn');
+        const smsFallbackBtn     = document.getElementById('smsFallbackBtn');
+        const statusMessage      = document.getElementById('statusMessage');
+        const statusText         = document.getElementById('statusText');
+        const gettingLocation    = document.getElementById('gettingLocation');
+        const mapContainer       = document.getElementById('mapContainer');
+        const confirmation       = document.getElementById('confirmation');
+        const smsInstructions    = document.getElementById('smsInstructions');
+        const connectivityAlert  = document.getElementById('connectivityAlert');
+        const connectionStatus   = document.getElementById('connectionStatus');
 
-        // App state
         let connectivityStatus = 'unknown';
+        let map = null, userMarker = null, userLocation = null;
 
-        // Initialize map
-        let map = null;
-        let userMarker = null;
-        let userLocation = null;
-
-        // Connect to Socket.IO
         let socket = null;
-        try {
-            socket = io();
-        } catch (e) {
-            console.log('Socket.IO not available:', e);
-        }
+        try { socket = io(); } catch(e) {}
 
-        // Check connectivity status when page loads
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', () => {
             checkConnectivity();
-
-            // Listen for online/offline events
             window.addEventListener('online', handleConnectivityChange);
             window.addEventListener('offline', handleConnectivityChange);
         });
 
-        // Check connectivity
         function checkConnectivity() {
-            // Basic check if user is offline
-            if (!navigator.onLine) {
-                connectivityStatus = 'offline';
-                handleConnectivityChange();
-                return;
-            }
-
-            // Additional check for slow connections
-            const startTime = Date.now();
-            fetch('/api/connection/ping', {
-                method: 'GET',
-                cache: 'no-cache'
-            })
-                .then(response => {
-                    const endTime = Date.now();
-                    const latency = endTime - startTime;
-
-                    // Determine connection quality based on latency
-                    if (latency < 500) {
-                        connectivityStatus = 'online';
-                    } else if (latency < 2000) {
-                        connectivityStatus = 'low_bandwidth';
-                    } else {
-                        connectivityStatus = 'very_low_bandwidth';
-                    }
-
+            if (!navigator.onLine) { connectivityStatus = 'offline'; handleConnectivityChange(); return; }
+            const t = Date.now();
+            fetch('/api/connection/ping', { method: 'GET', cache: 'no-cache' })
+                .then(() => {
+                    const lat = Date.now() - t;
+                    connectivityStatus = lat < 500 ? 'online' : lat < 2000 ? 'low_bandwidth' : 'very_low_bandwidth';
                     handleConnectivityChange();
                 })
-                .catch(error => {
-                    console.log('Connection error:', error);
-                    connectivityStatus = 'offline';
-                    handleConnectivityChange();
-                });
+                .catch(() => { connectivityStatus = 'offline'; handleConnectivityChange(); });
         }
 
-        // Handle connectivity changes
         function handleConnectivityChange() {
             if (connectivityStatus === 'offline') {
-                // Show offline alert
-                connectivityAlert.style.display = 'block';
-                connectionStatus.textContent = 'You appear to be offline. Using SMS is recommended.';
-
-                // Show SMS fallback options
-                smsFallbackBtn.style.display = 'inline-block';
-                smsInstructions.style.display = 'block';
-
-                // Show warning
-                showWarning("Internet connection not available. Please use SMS option for emergency assistance.");
+                connectivityAlert.classList.add('show');
+                connectionStatus.textContent = 'You appear to be offline. Use SMS for emergency assistance.';
+                smsFallbackBtn.style.display = 'flex';
+                smsInstructions.classList.add('show');
+                showStatus('warning', 'fa-triangle-exclamation', 'Internet connection unavailable. Please use the SMS option.');
             } else if (connectivityStatus === 'very_low_bandwidth' || connectivityStatus === 'low_bandwidth') {
-                // Show slow connection alert
-                connectivityAlert.style.display = 'block';
-                connectionStatus.textContent = 'Your connection is slow. Consider using SMS if location sharing fails.';
-
-                // Show SMS fallback button but not instructions yet
-                smsFallbackBtn.style.display = 'inline-block';
-
-                // Show warning
-                showWarning("Slow internet connection detected. Location sharing might take longer.");
+                connectivityAlert.classList.add('show');
+                connectionStatus.textContent = 'Your connection is slow. Consider SMS if sharing fails.';
+                smsFallbackBtn.style.display = 'flex';
+                showStatus('warning', 'fa-triangle-exclamation', 'Slow connection detected. Location sharing may take longer.');
             } else {
-                // Hide connectivity alerts for good connection
-                connectivityAlert.style.display = 'none';
+                connectivityAlert.classList.remove('show');
                 smsFallbackBtn.style.display = 'none';
-                smsInstructions.style.display = 'none';
+                smsInstructions.classList.remove('show');
             }
         }
 
-        // Share location button click handler
         shareLocationBtn.addEventListener('click', () => {
-            gettingLocation.style.display = 'block';
+            gettingLocation.classList.add('show');
             shareLocationBtn.disabled = true;
-
+            shareLocationBtn.classList.remove('btn-pulse');
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => handleLocationSuccess(position),
-                    (error) => handleLocationError(error),
+                    pos => handleLocationSuccess(pos),
+                    err => handleLocationError(err),
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             } else {
-                showError("Geolocation is not supported by this browser.");
-                // Show SMS fallback
-                smsInstructions.style.display = 'block';
+                showStatus('error', 'fa-circle-xmark', 'Geolocation is not supported by this browser.');
+                smsInstructions.classList.add('show');
             }
         });
 
-        // SMS fallback button handler
         smsFallbackBtn.addEventListener('click', () => {
-            smsInstructions.style.display = 'block';
+            smsInstructions.classList.add('show');
             smsFallbackBtn.style.display = 'none';
-            showWarning("Follow the SMS instructions to share your location.");
+            showStatus('warning', 'fa-triangle-exclamation', 'Follow the SMS instructions to share your location.');
         });
 
-        // Handle successful location retrieval
         function handleLocationSuccess(position) {
-            userLocation = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-            };
-
-            // Hide loading, show map
-            gettingLocation.style.display = 'none';
-            mapContainer.style.display = 'block';
-
-            // Initialize the map
+            userLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+            gettingLocation.classList.remove('show');
+            mapContainer.classList.add('show');
             initMap(userLocation.latitude, userLocation.longitude);
-
-            // Submit location to server
             submitLocation(userLocation);
         }
 
-        // Handle location retrieval error
         function handleLocationError(error) {
-            gettingLocation.style.display = 'none';
+            gettingLocation.classList.remove('show');
             shareLocationBtn.disabled = false;
-
-            let errorMessage;
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage = "Location access was denied. Please allow access to your location.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage = "Location information is unavailable. Please try again.";
-                    break;
-                case error.TIMEOUT:
-                    errorMessage = "The request to get your location timed out. Please try again.";
-                    break;
-                default:
-                    errorMessage = "An unknown error occurred while trying to get your location.";
-                    break;
-            }
-
-            showError(errorMessage);
-
-            // Show SMS fallback when GPS fails
-            smsInstructions.style.display = 'block';
-            showWarning("Alternative: Use SMS to share your location instead.");
+            shareLocationBtn.classList.add('btn-pulse');
+            const msgs = {
+                [error.PERMISSION_DENIED]:    'Location access was denied. Please allow access and try again.',
+                [error.POSITION_UNAVAILABLE]: 'Location information is unavailable. Please try again.',
+                [error.TIMEOUT]:              'Location request timed out. Please try again.',
+            };
+            showStatus('error', 'fa-circle-xmark', msgs[error.code] || 'An unknown error occurred.');
+            smsInstructions.classList.add('show');
         }
 
-        // Initialize map
         function initMap(lat, lng) {
             map = L.map('map').setView([lat, lng], 16);
-
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
-
-            // Add marker for user location
-            userMarker = L.marker([lat, lng]).addTo(map)
-                .bindPopup('Your location')
-                .openPopup();
+            userMarker = L.marker([lat, lng]).addTo(map).bindPopup('Your location').openPopup();
         }
 
-        // Submit location to server
         function submitLocation(location) {
             fetch('/api/location/submit', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     location_link_id: locationLinkId,
                     latitude: location.latitude,
@@ -419,65 +465,32 @@
                     connectivity_status: connectivityStatus
                 }),
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showSuccess("Location shared successfully! Help is on the way.");
-                        confirmation.style.display = 'block';
-
-                        // Emit socket event for real-time updates
-                        if (socket) {
-                            socket.emit('location_shared', {
-                                emergency_call_id: emergencyCallId,
-                                latitude: location.latitude,
-                                longitude: location.longitude
-                            });
-                        }
-
-                        // If ambulance was auto-assigned
-                        if (data.ambulance_assigned) {
-                            showSuccess("An ambulance has been dispatched to your location!");
-                        }
-
-                        // Hide SMS options once location is shared successfully
-                        smsInstructions.style.display = 'none';
-                        smsFallbackBtn.style.display = 'none';
-                    } else {
-                        showError("Error: " + data.error);
-                        shareLocationBtn.disabled = false;
-
-                        // Show SMS fallback if server request fails
-                        smsInstructions.style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.error("Error connecting to server:", error);
-                    showError("Error connecting to server. Please use the SMS option instead.");
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('success', 'fa-circle-check', 'Location shared successfully! Help is on the way.');
+                    confirmation.classList.add('show');
+                    smsInstructions.classList.remove('show');
+                    smsFallbackBtn.style.display = 'none';
+                    if (socket) socket.emit('location_shared', { emergency_call_id: emergencyCallId, ...location });
+                } else {
+                    showStatus('error', 'fa-circle-xmark', 'Error: ' + data.error);
                     shareLocationBtn.disabled = false;
-
-                    // Show SMS fallback when server request fails
-                    smsInstructions.style.display = 'block';
-                });
+                    smsInstructions.classList.add('show');
+                }
+            })
+            .catch(() => {
+                showStatus('error', 'fa-circle-xmark', 'Error connecting to server. Please use SMS option.');
+                shareLocationBtn.disabled = false;
+                smsInstructions.classList.add('show');
+            });
         }
 
-        // Show success message
-        function showSuccess(message) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status success';
-        }
-
-        // Show error message
-        function showError(message) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status error';
-        }
-
-        // Show warning message
-        function showWarning(message) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status warning';
+        function showStatus(type, icon, message) {
+            statusMessage.className = 'status-msg show ' + type;
+            statusMessage.querySelector('i').className = 'fa-solid ' + icon;
+            statusText.textContent = message;
         }
     </script>
 </body>
-
 </html>

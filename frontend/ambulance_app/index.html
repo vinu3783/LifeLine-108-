@@ -2,1069 +2,627 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERS - Ambulance Driver App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>LifeLine 108+ — Driver App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red:    #dc2626;
+            --navy:   #0f172a;
+            --slate:  #1e293b;
+            --muted:  #64748b;
+            --border: #e2e8f0;
+            --bg:     #f8fafc;
+            --white:  #ffffff;
+            --green:  #16a34a;
+            --blue:   #2563eb;
+            --radius: 14px;
+        }
+
+        html, body { height: 100%; overflow: hidden; }
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            font-size: 14px;
+            color: var(--navy);
+        }
+
+        /* ══════════════ LOGIN SCREEN ══════════════ */
+        #loginScreen {
+            min-height: 100vh;
+            background: linear-gradient(160deg, var(--navy) 0%, #1a1a2e 100%);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            background-color: #f5f5f5;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
-        
-        .login-container {
-            width: 90%;
-            max-width: 400px;
-            margin: 40px auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
+
+        .brand {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 36px;
         }
-        
-        .app-container {
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: var(--red);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: var(--white);
+        }
+        .brand-name { font-size: 24px; font-weight: 800; color: var(--white); }
+        .brand-sub  { font-size: 12px; color: #64748b; font-weight: 500; }
+
+        .login-card {
+            width: 100%; max-width: 440px;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 40px rgba(0,0,0,.35);
+            overflow: hidden;
+        }
+
+        .card-section {
+            padding: 28px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-section:last-child { border-bottom: none; }
+        .card-section h2 {
+            font-size: 16px; font-weight: 700; color: var(--navy);
+            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-section h2 i { color: var(--red); }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block; margin-bottom: 5px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+        }
+        .form-group input {
+            width: 100%; padding: 11px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-family: 'Inter', sans-serif; font-size: 14px; color: var(--navy);
+            outline: none; transition: border-color .18s, box-shadow .18s;
+        }
+        .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+
+        .btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 12px 18px;
+            border: none; border-radius: 9px;
+            font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all .18s;
+        }
+        .btn-primary   { background: var(--blue); color: var(--white); }
+        .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+        .btn-success   { background: var(--green); color: var(--white); margin-top: 4px; }
+        .btn-success:hover:not(:disabled) { background: #15803d; }
+        .btn-danger    { background: var(--red); color: var(--white); }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn:disabled  { background: #e2e8f0 !important; color: #94a3b8 !important; cursor: not-allowed; }
+
+        .back-link {
+            margin-top: 24px; color: #475569; font-size: 13px;
+            text-decoration: none; display: flex; align-items: center; gap: 6px;
+            transition: color .2s;
+        }
+        .back-link:hover { color: var(--white); }
+
+        /* ══════════════ APP SCREEN ══════════════ */
+        #appScreen {
             display: none;
             flex-direction: column;
             height: 100vh;
         }
-        
-        .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        /* top header */
+        .app-header {
+            background: var(--navy);
+            padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 500;
         }
-        
-        .status-indicator {
-            display: flex;
-            align-items: center;
+        .app-header-left { display: flex; align-items: center; gap: 10px; }
+        .app-logo {
+            width: 34px; height: 34px;
+            background: var(--red); border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; color: var(--white);
         }
-        
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .app-title  { font-size: 14px; font-weight: 700; color: var(--white); }
+        .driver-name { font-size: 11px; color: #64748b; font-weight: 500; }
+        .app-header-right { display: flex; align-items: center; gap: 10px; }
+
+        .status-pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px; font-weight: 700;
         }
-        
-        .available {
-            background-color: #2ecc71;
+        .status-pill.available { background: rgba(34,197,94,.15); color: #22c55e; }
+        .status-pill.on-duty   { background: rgba(220,38,38,.15); color: #ef4444; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+        .conn-badge {
+            font-size: 11px; font-weight: 600;
+            padding: 4px 8px; border-radius: 6px;
         }
-        
-        .on-duty {
-            background-color: #e74c3c;
-        }
-        
-        .map-container {
-            flex: 1;
-            position: relative;
-        }
-        
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .emergency-alert {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            background-color: rgba(231, 76, 60, 0.9);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: none;
-        }
-        
-        .emergency-details {
-            background-color: white;
-            color: #333;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-        }
-        
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .btn-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        
-        .control-panel {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .control-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #2c3e50;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .bottom-panel {
-            background-color: white;
-            padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .notification-sound {
-            display: none;
-        }
-        
-        /* Connection status styles */
-        .connection-status {
-            margin-left: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            display: none;
-        }
-        
-        .status-online {
-            color: #2ecc71;
-            font-weight: bold;
-        }
-        
-        .status-offline {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        /* Route information */
-        .route-info {
-            background-color: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: absolute;
-            bottom: 100px;
-            left: 20px;
-            z-index: 1000;
-            display: none;
-        }
-        
-        /* Logout button */
+        .conn-badge.online  { background: rgba(34,197,94,.15); color: #22c55e; }
+        .conn-badge.offline { background: rgba(220,38,38,.15); color: #ef4444; }
+
         .logout-btn {
             padding: 6px 12px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 10px;
+            background: rgba(255,255,255,.08);
+            color: #94a3b8;
+            border: none; border-radius: 7px;
+            font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all .18s;
         }
+        .logout-btn:hover { background: rgba(220,38,38,.3); color: var(--white); }
+
+        /* map area */
+        .map-area {
+            flex: 1; position: relative; overflow: hidden;
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* emergency overlay */
+        .emergency-overlay {
+            position: absolute; top: 12px; left: 12px; right: 12px;
+            background: rgba(220,38,38,.96);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius);
+            padding: 16px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 8px 32px rgba(220,38,38,.4);
+            animation: slideDown .3s ease-out;
+        }
+        .emergency-overlay.show { display: block; }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+        .emerg-title {
+            font-size: 15px; font-weight: 800; color: var(--white);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 12px;
+        }
+        .emerg-title i { font-size: 18px; animation: shake .5s ease-in-out infinite alternate; }
+        @keyframes shake { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+
+        .emerg-details {
+            background: rgba(0,0,0,.25);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+        .emerg-details p { font-size: 13px; color: rgba(255,255,255,.9); margin-bottom: 5px; line-height: 1.4; }
+        .emerg-details p:last-child { margin-bottom: 0; }
+        .emerg-details strong { color: var(--white); }
+
+        .emerg-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .emerg-btn {
+            padding: 10px 8px;
+            border: none; border-radius: 9px;
+            font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all .18s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .emerg-btn i { font-size: 16px; }
+        .emerg-btn.nav    { background: var(--blue); color: var(--white); }
+        .emerg-btn.arrive { background: var(--green); color: var(--white); }
+        .emerg-btn.done   { background: rgba(255,255,255,.2); color: var(--white); border: 1px solid rgba(255,255,255,.3); }
+        .emerg-btn:hover { filter: brightness(1.1); }
+        .emerg-btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+
+        /* route info */
+        .route-info {
+            position: absolute; bottom: 80px; left: 12px;
+            background: rgba(255,255,255,.95);
+            backdrop-filter: blur(8px);
+            border-radius: 10px;
+            padding: 10px 14px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 12px rgba(15,23,42,.12);
+            font-size: 12px;
+        }
+        .route-info.show { display: block; }
+        .route-info div { margin-bottom: 3px; color: var(--navy); }
+        .route-info div:last-child { margin-bottom: 0; }
+
+        /* fab buttons */
+        .fab-group {
+            position: absolute; bottom: 80px; right: 12px;
+            display: flex; flex-direction: column; gap: 10px;
+            z-index: 1000;
+        }
+        .fab {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--white);
+            box-shadow: 0 4px 14px rgba(15,23,42,.2);
+            transition: all .18s;
+        }
+        .fab:hover { transform: scale(1.08); }
+        .fab-center { background: var(--navy); }
+        .fab-route  { background: var(--blue); display: none; }
+
+        /* bottom status bar */
+        .status-bar {
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 10px 16px;
+            font-size: 12px; color: var(--muted);
+            display: flex; align-items: center; gap: 8px;
+            flex-shrink: 0;
+        }
+        .status-bar i { color: var(--green); }
     </style>
 </head>
 <body>
-    <!-- Login Container -->
-    <div id="loginContainer" class="login-container">
-        <h2>Ambulance Driver Login</h2>
-        <div class="form-group">
-            <label for="ambulanceId">Ambulance ID</label>
-            <input type="text" id="ambulanceId" placeholder="Enter your ambulance ID">
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+    <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-truck-medical"></i></div>
+        <div>
+            <div class="brand-name">LifeLine 108+</div>
+            <div class="brand-sub">Ambulance Driver Portal</div>
         </div>
-        <button class="btn btn-primary" id="loginBtn">Login</button>
-        
-        <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-            <h3>New Ambulance Registration</h3>
+    </div>
+
+    <div class="login-card">
+
+        <!-- Login section -->
+        <div class="card-section">
+            <h2><i class="fa-solid fa-right-to-bracket"></i> Driver Login</h2>
             <div class="form-group">
-                <label for="newAmbulanceId">Ambulance ID</label>
+                <label>Ambulance ID</label>
+                <input type="text" id="ambulanceId" placeholder="e.g. AMB-001 or demo">
+            </div>
+            <button class="btn btn-primary" id="loginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </button>
+        </div>
+
+        <!-- Register section -->
+        <div class="card-section">
+            <h2><i class="fa-solid fa-user-plus"></i> Register New Ambulance</h2>
+            <div class="form-group">
+                <label>Ambulance ID</label>
                 <input type="text" id="newAmbulanceId" placeholder="Enter new ambulance ID">
             </div>
             <div class="form-group">
-                <label for="driverName">Driver Name</label>
+                <label>Driver Name</label>
                 <input type="text" id="driverName" placeholder="Enter driver name">
             </div>
             <div class="form-group">
-                <label for="driverPhone">Driver Phone</label>
+                <label>Driver Phone</label>
                 <input type="text" id="driverPhone" placeholder="+919876543210">
             </div>
-            <button class="btn btn-success" id="registerBtn">Register</button>
+            <button class="btn btn-success" id="registerBtn">
+                <i class="fa-solid fa-plus"></i> Register Ambulance
+            </button>
         </div>
-        
-        <div style="margin-top: 20px;">
-            <a href="/" style="text-decoration: none; color: #7f8c8d; font-weight: bold;">&larr; Back to Home</a>
-        </div>
-    </div>
-    
-    <!-- App Container (Hidden initially) -->
-    <div id="appContainer" class="app-container">
-        <div class="header">
-            <div>
-                <h2 style="margin: 0;">Ambulance Driver App</h2>
-                <div id="driverInfo">Loading...</div>
-            </div>
-            <div style="display: flex; align-items: center;">
-                <div class="status-indicator">
-                    <div id="statusDot" class="status-dot available"></div>
-                    <span id="statusText">Available</span>
-                </div>
-                <div class="connection-status">
-                    <span id="connectionStatus" class="status-online">Online</span>
-                </div>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
-            </div>
-        </div>
-        
-        <div class="map-container">
-            <div id="map"></div>
-            
-            <!-- Emergency Alert (Hidden initially) -->
-            <div id="emergencyAlert" class="emergency-alert">
-                <h3>⚠️ EMERGENCY ALERT</h3>
-                <div class="emergency-details" id="emergencyDetails">
-                    <!-- Emergency details will be loaded here -->
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="navigateBtn">Navigate</button>
-                    <button class="btn btn-success" id="arrivedBtn">Mark Arrived</button>
-                    <button class="btn btn-danger" id="completeBtn">Complete</button>
-                </div>
-            </div>
-            
-            <!-- Route information -->
-            <div id="routeInfo" class="route-info">
-                <div><strong>Distance:</strong> <span id="routeDistance">Calculating...</span></div>
-                <div><strong>ETA:</strong> <span id="routeETA">Calculating...</span></div>
-            </div>
-            
-            <div class="control-panel">
-                <button class="control-button" id="recenterBtn" title="Recenter map">📍</button>
-                <button class="control-button" id="toggleRouteBtn" style="display: none;" title="Toggle route visibility">🛣️</button>
-            </div>
-        </div>
-        
-        <div class="bottom-panel">
-            <div id="locationStatus">Waiting for GPS...</div>
-        </div>
-    </div>
-    
-    <!-- Notification Sound -->
-    <audio id="notificationSound" preload="auto">
-        <source src="https://www.soundjay.com/buttons/sounds/beep-08b.mp3" type="audio/mpeg">
-        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3" type="audio/mpeg">
-    </audio>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
-    <script>
-        // DOM Elements
-        const loginContainer = document.getElementById('loginContainer');
-        const appContainer = document.getElementById('appContainer');
-        const ambulanceIdInput = document.getElementById('ambulanceId');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const newAmbulanceIdInput = document.getElementById('newAmbulanceId');
-        const driverNameInput = document.getElementById('driverName');
-        const driverPhoneInput = document.getElementById('driverPhone');
-        const registerBtn = document.getElementById('registerBtn');
-        const driverInfo = document.getElementById('driverInfo');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const emergencyAlert = document.getElementById('emergencyAlert');
-        const emergencyDetails = document.getElementById('emergencyDetails');
-        const navigateBtn = document.getElementById('navigateBtn');
-        const arrivedBtn = document.getElementById('arrivedBtn');
-        const completeBtn = document.getElementById('completeBtn');
-        const recenterBtn = document.getElementById('recenterBtn');
-        const toggleRouteBtn = document.getElementById('toggleRouteBtn');
-        const locationStatus = document.getElementById('locationStatus');
-        const notificationSound = document.getElementById('notificationSound');
-        const routeInfo = document.getElementById('routeInfo');
-        const routeDistance = document.getElementById('routeDistance');
-        const routeETA = document.getElementById('routeETA');
-        const connectionStatus = document.getElementById('connectionStatus');
-        
-        // Global Variables
-        let map = null;
-        let userMarker = null;
-        let destinationMarker = null;
-        let routePolyline = null;
-        let watchId = null;
-        let currentPosition = null;
-        let ambulanceData = null;
-        let activeEmergency = null;
-        let locationUpdateInterval = null;
-        
-        // Connect to Socket.IO with proper error handling
-        let socket = null;
-        try {
-            // Connect to the Socket.IO server - use the same host/port as the page
-            socket = io();
-            
-            socket.on('connect', function() {
-                console.log('Connected to Socket.IO server');
-                updateConnectionStatus();
-            });
-            
-            socket.on('disconnect', function() {
-                console.log('Disconnected from Socket.IO server');
-                updateConnectionStatus();
-            });
-            
-            socket.on('assignment_update', function(data) {
-                console.log('Received assignment update:', data);
-                
-                // Check if this assignment is for this ambulance
-                if (ambulanceData && data.ambulance_id === ambulanceData.id) {
-                    // Force check for emergency assignment
-                    checkForEmergency();
-                }
-            });
-            
-            socket.on('connect_error', function(error) {
-                console.error('Socket.IO connection error:', error);
-                updateConnectionStatus();
-            });
-        } catch (e) {
-            console.error('Socket.IO initialization error:', e);
-            updateConnectionStatus();
+    </div>
+    <a class="back-link" href="/"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+</div>
+
+<!-- ═══ APP SCREEN ═══ -->
+<div id="appScreen">
+    <div class="app-header">
+        <div class="app-header-left">
+            <div class="app-logo"><i class="fa-solid fa-truck-medical"></i></div>
+            <div>
+                <div class="app-title">LifeLine 108+</div>
+                <div class="driver-name" id="driverInfo">Loading…</div>
+            </div>
+        </div>
+        <div class="app-header-right">
+            <div class="status-pill available" id="statusPill">
+                <div class="status-dot"></div>
+                <span id="statusText">Available</span>
+            </div>
+            <span class="conn-badge online" id="connectionStatus">Online</span>
+            <button class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+    </div>
+
+    <div class="map-area">
+        <div id="map"></div>
+
+        <!-- Emergency Overlay -->
+        <div class="emergency-overlay" id="emergencyAlert">
+            <div class="emerg-title">
+                <i class="fa-solid fa-siren-on"></i> EMERGENCY ALERT
+            </div>
+            <div class="emerg-details" id="emergencyDetails">
+                <!-- filled dynamically -->
+            </div>
+            <div class="emerg-btns">
+                <button class="emerg-btn nav" id="navigateBtn"><i class="fa-solid fa-map-location-dot"></i> Navigate</button>
+                <button class="emerg-btn arrive" id="arrivedBtn"><i class="fa-solid fa-location-check"></i> Arrived</button>
+                <button class="emerg-btn done" id="completeBtn"><i class="fa-solid fa-flag-checkered"></i> Complete</button>
+            </div>
+        </div>
+
+        <!-- Route Info -->
+        <div class="route-info" id="routeInfo">
+            <div><strong>Distance:</strong> <span id="routeDistance">—</span></div>
+            <div><strong>ETA:</strong> <span id="routeETA">—</span></div>
+        </div>
+
+        <!-- FAB Buttons -->
+        <div class="fab-group">
+            <button class="fab fab-route" id="toggleRouteBtn" title="Toggle route"><i class="fa-solid fa-route"></i></button>
+            <button class="fab fab-center" id="recenterBtn" title="Re-center"><i class="fa-solid fa-location-crosshairs"></i></button>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <i class="fa-solid fa-satellite-dish"></i>
+        <span id="locationStatus">Waiting for GPS…</span>
+    </div>
+</div>
+
+<audio id="notificationSound" preload="auto">
+    <source src="https://www.soundjay.com/buttons/sounds/beep-08b.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+<script>
+    const loginScreen    = document.getElementById('loginScreen');
+    const appScreen      = document.getElementById('appScreen');
+    const ambulanceIdInp = document.getElementById('ambulanceId');
+    const loginBtn       = document.getElementById('loginBtn');
+    const logoutBtn      = document.getElementById('logoutBtn');
+    const newAmbIdInp    = document.getElementById('newAmbulanceId');
+    const driverNameInp  = document.getElementById('driverName');
+    const driverPhoneInp = document.getElementById('driverPhone');
+    const registerBtn    = document.getElementById('registerBtn');
+    const driverInfo     = document.getElementById('driverInfo');
+    const statusPill     = document.getElementById('statusPill');
+    const statusText     = document.getElementById('statusText');
+    const emergencyAlert = document.getElementById('emergencyAlert');
+    const emergencyDetails=document.getElementById('emergencyDetails');
+    const navigateBtn    = document.getElementById('navigateBtn');
+    const arrivedBtn     = document.getElementById('arrivedBtn');
+    const completeBtn    = document.getElementById('completeBtn');
+    const recenterBtn    = document.getElementById('recenterBtn');
+    const toggleRouteBtn = document.getElementById('toggleRouteBtn');
+    const locationStatus = document.getElementById('locationStatus');
+    const routeInfo      = document.getElementById('routeInfo');
+    const routeDistance  = document.getElementById('routeDistance');
+    const routeETA       = document.getElementById('routeETA');
+    const connStatus     = document.getElementById('connectionStatus');
+
+    let map=null, userMarker=null, destMarker=null, routePoly=null;
+    let watchId=null, currentPos=null, ambulanceData=null, activeEmergency=null;
+    let locUpdateInterval=null;
+
+    let socket=null;
+    try {
+        socket=io();
+        socket.on('connect', updateConnStatus);
+        socket.on('disconnect', updateConnStatus);
+        socket.on('assignment_update', d=>{ if(ambulanceData&&d.ambulance_id===ambulanceData.id) checkForEmergency(); });
+        socket.on('connect_error', updateConnStatus);
+    } catch(e){}
+
+    function login(){
+        const id=ambulanceIdInp.value.trim();
+        if(!id){ alert('Please enter your ambulance ID'); return; }
+        loginBtn.disabled=true;
+        loginBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Logging in…';
+        if(id==='demo'){
+            ambulanceData={id:1,ambulance_id:'DEMO-123',driver_name:'Demo Driver',latitude:14.4644,longitude:75.9218,is_available:true};
+            afterLogin();
+            return;
         }
-        
-        // Login function with improved error handling
-        function login() {
-            const ambulanceId = ambulanceIdInput.value.trim();
-            
-            if (!ambulanceId) {
-                alert('Please enter your ambulance ID');
-                return;
-            }
-            
-            // Show some feedback
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
-            
-            // For testing/demo purposes - bypass actual API call
-            if (ambulanceId === 'demo') {
-                console.log('Using demo mode login');
-                ambulanceData = {
-                    id: 1,
-                    ambulance_id: 'DEMO-123',
-                    driver_name: 'Demo Driver',
-                    latitude: 14.4644,
-                    longitude: 75.9218,
-                    is_available: true
-                };
-                
-                showApp();
-                initMap();
-                startLocationTracking();
-                
-                // Update driver info
-                driverInfo.textContent = `${ambulanceData.ambulance_id} - ${ambulanceData.driver_name}`;
-                
-                // Update status indicator
-                updateStatusIndicator(ambulanceData.is_available);
-                
-                // Check for existing assignments
-                checkForEmergency();
-                
-                // Reset button state
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
-                
-                return;
-            }
-            
-            console.log(`Attempting to log in with ambulance ID: ${ambulanceId}`);
-            
-            // Make actual API call to log in
-            fetch('/api/ambulance/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ambulance_id: ambulanceId }),
+        fetch('/api/ambulance/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ambulance_id:id})})
+            .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+            .then(d=>{
+                if(d.success){ ambulanceData=d.ambulance; afterLogin(); }
+                else alert('Error: '+(d.error||'Login failed'));
             })
-            .then(response => {
-                console.log('Login response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Login response data:', data);
-                
-                if (data.success) {
-                    ambulanceData = data.ambulance;
-                    console.log('Login successful, ambulance data:', ambulanceData);
-                    
-                    showApp();
-                    initMap();
-                    startLocationTracking();
-                    
-                    // Update driver info
-                    driverInfo.textContent = `${ambulanceData.ambulance_id} - ${ambulanceData.driver_name}`;
-                    
-                    // Update status indicator
-                    updateStatusIndicator(ambulanceData.is_available);
-                    
-                    // Check for existing assignments
-                    checkForEmergency();
-                    
-                    // Start regular emergency checks and location updates
-                    setInterval(checkForEmergency, 30000); // Check every 30 seconds
-                } else {
-                    console.error('Login failed:', data.error);
-                    alert('Error: ' + (data.error || 'Unknown login error'));
-                }
-            })
-            .catch(error => {
-                console.error('Login error:', error);
-                alert('Error connecting to server. Please try again.');
-            })
-            .finally(() => {
-                // Reset button state
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
-            });
-        }
-        
-        // Logout function
-        function logout() {
-            // Clear intervals and watchers
-            if (locationUpdateInterval) {
-                clearInterval(locationUpdateInterval);
+            .catch(()=>alert('Error connecting to server.'))
+            .finally(()=>{ loginBtn.disabled=false; loginBtn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> Login'; });
+    }
+
+    function afterLogin(){
+        loginBtn.disabled=false; loginBtn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> Login';
+        loginScreen.style.display='none';
+        appScreen.style.display='flex';
+        initMap();
+        startLocationTracking();
+        driverInfo.textContent=`${ambulanceData.ambulance_id} — ${ambulanceData.driver_name}`;
+        updateStatusPill(ambulanceData.is_available);
+        checkForEmergency();
+        setInterval(checkForEmergency, 30000);
+        updateConnStatus();
+    }
+
+    function logout(){
+        if(locUpdateInterval) clearInterval(locUpdateInterval);
+        if(watchId) navigator.geolocation.clearWatch(watchId);
+        ambulanceData=null; activeEmergency=null;
+        appScreen.style.display='none';
+        loginScreen.style.display='flex';
+        if(map){ map.remove(); map=null; }
+        ambulanceIdInp.value='';
+    }
+
+    function registerAmbulance(){
+        const id=newAmbIdInp.value.trim(), name=driverNameInp.value.trim(), phone=driverPhoneInp.value.trim();
+        if(!id||!name||!phone){ alert('Please fill in all fields'); return; }
+        if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+        navigator.geolocation.getCurrentPosition(pos=>{
+            fetch('/api/ambulance/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ambulance_id:id,driver_name:name,driver_phone:phone,latitude:pos.coords.latitude,longitude:pos.coords.longitude})})
+                .then(r=>r.json()).then(d=>{
+                    if(d.success){ alert('Registered successfully! You can now login.'); newAmbIdInp.value=''; driverNameInp.value=''; driverPhoneInp.value=''; ambulanceIdInp.value=id; }
+                    else alert('Error: '+d.error);
+                }).catch(()=>alert('Error connecting to server.'));
+        }, e=>alert('Location error: '+e.message), {enableHighAccuracy:true,timeout:10000});
+    }
+
+    function initMap(){
+        const lat=ambulanceData?.latitude||14.4644, lng=ambulanceData?.longitude||75.9218;
+        map=L.map('map').setView([lat,lng],15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+        const icon=L.divIcon({className:'',html:`<div style="background:var(--green);width:24px;height:24px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">A</div>`,iconSize:[24,24],iconAnchor:[12,12]});
+        userMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup(`Ambulance ${ambulanceData.ambulance_id}`);
+    }
+
+    function startLocationTracking(){
+        if(!navigator.geolocation){ locationStatus.textContent='Geolocation not supported'; return; }
+        watchId=navigator.geolocation.watchPosition(pos=>{
+            currentPos={latitude:pos.coords.latitude,longitude:pos.coords.longitude};
+            locationStatus.textContent=`GPS: ${currentPos.latitude.toFixed(5)}, ${currentPos.longitude.toFixed(5)} (±${pos.coords.accuracy.toFixed(0)}m)`;
+            if(map&&userMarker) userMarker.setLatLng([currentPos.latitude,currentPos.longitude]);
+            if(activeEmergency&&routePoly) updateRoute();
+        },err=>{
+            const m={[err.PERMISSION_DENIED]:'Location access denied.',[err.POSITION_UNAVAILABLE]:'Location unavailable.',[err.TIMEOUT]:'Location timed out.'};
+            locationStatus.textContent=m[err.code]||'Location error.';
+        },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+        locUpdateInterval=setInterval(sendLocationUpdate, 10000);
+    }
+
+    function sendLocationUpdate(){
+        if(!currentPos||!ambulanceData) return;
+        fetch('/api/ambulance/update-location',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ambulance_id:ambulanceData.ambulance_id,...currentPos})})
+            .then(r=>r.json())
+            .then(d=>{ if(socket?.connected) socket.emit('ambulance_location_update',{ambulance_id:ambulanceData.ambulance_id,...currentPos}); })
+            .catch(()=>{});
+    }
+
+    function checkForEmergency(){
+        if(!ambulanceData) return;
+        fetch(`/api/ambulance/get-assignment/${ambulanceData.ambulance_id}`).then(r=>r.json()).then(d=>{
+            if(d.success&&d.has_assignment){
+                if(!activeEmergency||activeEmergency.id!==d.emergency_call.id) handleNewEmergency(d.emergency_call);
+            } else if(activeEmergency){
+                hideEmergency(); activeEmergency=null; updateStatusPill(true);
             }
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-            }
-            
-            // Clear data
-            ambulanceData = null;
-            activeEmergency = null;
-            
-            // Reset UI
-            appContainer.style.display = 'none';
-            loginContainer.style.display = 'block';
-            
-            // Clear map
-            if (map) {
-                map.remove();
-                map = null;
-            }
-            
-            // Clear forms
-            ambulanceIdInput.value = '';
-        }
-        
-        // Register new ambulance
-        function registerAmbulance() {
-            const newAmbulanceId = newAmbulanceIdInput.value.trim();
-            const driverName = driverNameInput.value.trim();
-            const driverPhone = driverPhoneInput.value.trim();
-            
-            if (!newAmbulanceId || !driverName || !driverPhone) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            // Get current position
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        
-                        registerWithLocation(newAmbulanceId, driverName, driverPhone, latitude, longitude);
-                    },
-                    error => {
-                        alert('Error getting location: ' + error.message);
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            } else {
-                alert('Geolocation is not supported by this browser');
-            }
-        }
-        
-        // Register with location
-        function registerWithLocation(ambulanceId, driverName, driverPhone, latitude, longitude) {
-            // Make actual API call to register ambulance
-            fetch('/api/ambulance/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ambulance_id: ambulanceId,
-                    driver_name: driverName,
-                    driver_phone: driverPhone,
-                    latitude: latitude,
-                    longitude: longitude
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Ambulance registered successfully! You can now login.');
-                    
-                    // Clear registration form
-                    newAmbulanceIdInput.value = '';
-                    driverNameInput.value = '';
-                    driverPhoneInput.value = '';
-                    
-                    // Populate login field
-                    ambulanceIdInput.value = ambulanceId;
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Registration error:', error);
-                alert('Error connecting to server. Please try again.');
-            });
-        }
-        
-        // Initialize map
-        function initMap() {
-            // Use initial ambulance location or default to Davanagere city center
-            const initialLat = ambulanceData ? ambulanceData.latitude : 14.4644;
-            const initialLng = ambulanceData ? ambulanceData.longitude : 75.9218;
-            
-            map = L.map('map').setView([initialLat, initialLng], 15);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Add ambulance marker
-            userMarker = L.marker([initialLat, initialLng]).addTo(map)
-                .bindPopup(`Ambulance ${ambulanceData.ambulance_id}`);
-        }
-        
-        // Start tracking location
-        function startLocationTracking() {
-            if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(
-                    position => handlePositionUpdate(position),
-                    error => handleLocationError(error),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-                
-                // Start sending location updates to server
-                locationUpdateInterval = setInterval(sendLocationUpdate, 10000); // Every 10 seconds
-            } else {
-                locationStatus.textContent = 'Geolocation is not supported by this browser.';
-            }
-        }
-        
-        // Handle position update
-        function handlePositionUpdate(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-            
-            currentPosition = { latitude, longitude };
-            
-            // Update location status
-            locationStatus.textContent = `GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (±${accuracy.toFixed(1)}m)`;
-            
-            // Update marker on map
-            if (map && userMarker) {
-                userMarker.setLatLng([latitude, longitude]);
-            }
-            
-            // Update route if active emergency
-            if (activeEmergency && routePolyline) {
-                // Update route
-                updateRoute();
-            }
-        }
-        
-        // Handle location error
-        function handleLocationError(error) {
-            let errorMessage;
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage = "Location access was denied. Please allow access to your location.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage = "Location information is unavailable.";
-                    break;
-                case error.TIMEOUT:
-                    errorMessage = "The request to get your location timed out.";
-                    break;
-                default:
-                    errorMessage = "An unknown error occurred while trying to get your location.";
-                    break;
-            }
-            
-            locationStatus.textContent = `Error: ${errorMessage}`;
-        }
-        
-        // Send location update to server
-        function sendLocationUpdate() {
-            if (!currentPosition || !ambulanceData) return;
-            
-            fetch('/api/ambulance/update-location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ambulance_id: ambulanceData.ambulance_id,
-                    latitude: currentPosition.latitude,
-                    longitude: currentPosition.longitude
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    console.error('Error updating location:', data.error);
-                }
-                
-                // Emit socket event for real-time updates
-                if (socket && socket.connected) {
-                    socket.emit('ambulance_location_update', {
-                        ambulance_id: ambulanceData.ambulance_id,
-                        latitude: currentPosition.latitude,
-                        longitude: currentPosition.longitude
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error sending location update:', error);
-            });
-        }
-        
-        // Check for emergency assignment
-        function checkForEmergency() {
-            if (!ambulanceData) return;
-            
-            fetch(`/api/ambulance/get-assignment/${ambulanceData.ambulance_id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.has_assignment) {
-                        // We have an emergency assignment
-                        if (!activeEmergency || activeEmergency.id !== data.emergency_call.id) {
-                            // New emergency assignment
-                            handleNewEmergency(data.emergency_call);
-                        }
-                    } else if (activeEmergency) {
-                        // No active emergency, but we had one before - it might have been completed
-                        hideEmergencyAlert();
-                        activeEmergency = null;
-                        updateStatusIndicator(true);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking for emergency:', error);
-                });
-        }
-        
-        // Handle new emergency
-        function handleNewEmergency(emergency) {
-            activeEmergency = emergency;
-            updateStatusIndicator(false);
-            
-            // Show emergency alert
-            showEmergencyAlert(emergency);
-            
-            // Add destination marker
-            addDestinationMarker(emergency.latitude, emergency.longitude, emergency.address);
-            
-            // Center map to show both markers
-            if (currentPosition) {
-                fitBothLocationsOnMap(
-                    currentPosition.latitude, 
-                    currentPosition.longitude,
-                    emergency.latitude,
-                    emergency.longitude
-                );
-            }
-            
-            // Play notification sound
-            playNotificationSound();
-            
-            // Show route toggle button
-            toggleRouteBtn.style.display = 'flex';
-            
-            // Calculate route
-            updateRoute();
-        }
-        
-        // Show emergency alert
-        function showEmergencyAlert(emergency) {
-            emergencyDetails.innerHTML = `
-                <p><strong>Location:</strong> ${emergency.latitude}, ${emergency.longitude}</p>
-                <p><strong>Address:</strong> ${emergency.address || 'Address not available'}</p>
-                <p><strong>Caller:</strong> ${emergency.caller_phone}</p>
-                <p><strong>Time:</strong> ${formatDateTime(emergency.call_time)}</p>
-            `;
-            
-            emergencyAlert.style.display = 'block';
-        }
-        
-        // Hide emergency alert
-        function hideEmergencyAlert() {
-            emergencyAlert.style.display = 'none';
-            
-            // Remove destination marker and route
-            if (map && destinationMarker) {
-                map.removeLayer(destinationMarker);
-                destinationMarker = null;
-            }
-            
-            if (map && routePolyline) {
-                map.removeLayer(routePolyline);
-                routePolyline = null;
-            }
-            
-            // Hide route info and toggle button
-            routeInfo.style.display = 'none';
-            toggleRouteBtn.style.display = 'none';
-        }
-        
-        // Add destination marker
-        function addDestinationMarker(lat, lng, address) {
-            if (!map) return;
-            
-            // Remove existing marker if any
-            if (destinationMarker) {
-                map.removeLayer(destinationMarker);
-            }
-            
-            // Create emergency icon
-            const icon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">!</div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            });
-            
-            // Add marker
-            destinationMarker = L.marker([lat, lng], { icon: icon })
-                .addTo(map)
-                .bindPopup(`
-                    <b>Emergency Location</b><br>
-                    ${address || 'Address not available'}
-                `);
-        }
-        
-        // Fit both locations on map
-        function fitBothLocationsOnMap(lat1, lng1, lat2, lng2) {
-            if (!map) return;
-            
-            const bounds = L.latLngBounds(
-                L.latLng(lat1, lng1),
-                L.latLng(lat2, lng2)
-            );
-            
-            map.fitBounds(bounds, { padding: [50, 50] });
-        }
-        
-        // Update route
-        function updateRoute() {
-            if (!activeEmergency || !currentPosition || !map) return;
-            
-            // Draw a simple straight line between current position and emergency location
-            const points = [
-                [currentPosition.latitude, currentPosition.longitude],
-                [activeEmergency.latitude, activeEmergency.longitude]
-            ];
-            
-            // Remove existing polyline if any
-            if (routePolyline) {
-                map.removeLayer(routePolyline);
-            }
-            
-            // Add new polyline
-            routePolyline = L.polyline(points, {
-                color: 'blue',
-                weight: 6,
-                opacity: 0.7,
-                lineJoin: 'round'
-            }).addTo(map);
-            
-            // Calculate straight-line distance
-            const distance = calculateDistance(
-                currentPosition.latitude, 
-                currentPosition.longitude,
-                activeEmergency.latitude, 
-                activeEmergency.longitude
-            );
-            
-            // Calculate estimated time (assuming 40 km/h average speed)
-            const timeInMinutes = Math.round((distance / 40) * 60);
-            
-            // Update route info
-            routeDistance.textContent = formatDistance(distance);
-            routeETA.textContent = formatTime(timeInMinutes);
-            
-            // Show route info
-            routeInfo.style.display = 'block';
-        }
-        
-        // Calculate distance between two points in kilometers (Haversine formula)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of the Earth in km
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c; // Distance in km
-            return distance;
-        }
-        
-        // Convert degrees to radians
-        function deg2rad(deg) {
-            return deg * (Math.PI/180);
-        }
-        
-        // Format distance
-        function formatDistance(kilometers) {
-            if (kilometers < 1) {
-                return `${Math.round(kilometers * 1000)} m`;
-            } else {
-                return `${kilometers.toFixed(1)} km`;
-            }
-        }
-        
-        // Format time
-        function formatTime(minutes) {
-            if (minutes < 1) {
-                return 'Less than a minute';
-            } else if (minutes < 60) {
-                return `${Math.round(minutes)} minutes`;
-            } else {
-                const hours = Math.floor(minutes / 60);
-                const mins = Math.round(minutes % 60);
-                return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins > 1 ? 's' : ''}`;
-            }
-        }
-        
-        // Toggle route visibility
-        function toggleRoute() {
-            if (routePolyline && map.hasLayer(routePolyline)) {
-                map.removeLayer(routePolyline);
-                routeInfo.style.display = 'none';
-                toggleRouteBtn.style.backgroundColor = '#2c3e50';
-            } else {
-                updateRoute();
-                toggleRouteBtn.style.backgroundColor = '#3498db';
-            }
-        }
-        
-        // Navigate to emergency location
-        function navigateToEmergency() {
-            if (!activeEmergency || !currentPosition) return;
-            
-            // Generate OpenStreetMap route URL
-            const routeUrl = generateRouteUrl(
-                currentPosition.latitude,
-                currentPosition.longitude,
-                activeEmergency.latitude,
-                activeEmergency.longitude
-            );
-            
-            // Open in new tab/window
-            window.open(routeUrl, '_blank');
-        }
-        
-        // Generate route URL for OpenStreetMap
-        function generateRouteUrl(startLat, startLon, endLat, endLon) {
-            return `https://www.openstreetmap.org/directions?engine=graphhopper_car&route=${startLat}%2C${startLon}%3B${endLat}%2C${endLon}`;
-        }
-        
-        // Mark as arrived at emergency location
-        function markAsArrived() {
-            if (!activeEmergency || !ambulanceData) return;
-            
-            fetch('/api/ambulance/mark-arrived', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ambulance_id: ambulanceData.ambulance_id,
-                    emergency_call_id: activeEmergency.id
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Successfully marked as arrived.');
-                    
-                    // Update UI
-                    arrivedBtn.disabled = true;
-                    completeBtn.disabled = false;
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error marking arrived:', error);
-                alert('Error connecting to server. Please try again.');
-            });
-        }
-        
-        // Mark emergency as completed
-        function markAsCompleted() {
-            if (!activeEmergency) return;
-            
-            fetch('/api/ambulance/mark-completed', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    emergency_call_id: activeEmergency.id
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Emergency marked as completed.');
-                    
-                    // Update UI
-                    hideEmergencyAlert();
-                    activeEmergency = null;
-                    updateStatusIndicator(true);
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error marking completed:', error);
-                alert('Error connecting to server. Please try again.');
-            });
-        }
-        
-        // Update status indicator
-        function updateStatusIndicator(isAvailable) {
-            if (isAvailable) {
-                statusDot.className = 'status-dot available';
-                statusText.textContent = 'Available';
-            } else {
-                statusDot.className = 'status-dot on-duty';
-                statusText.textContent = 'On Duty';
-            }
-        }
-        
-        // Update connection status
-        function updateConnectionStatus() {
-            const isOnline = navigator.onLine && (socket ? socket.connected : false);
-            
-            if (connectionStatus) {
-                connectionStatus.textContent = isOnline ? 'Online' : 'Offline';
-                connectionStatus.className = isOnline ? 'status-online' : 'status-offline';
-            }
-        }
-        
-        // Show app after login
-        function showApp() {
-            loginContainer.style.display = 'none';
-            appContainer.style.display = 'flex';
-        }
-        
-        // Recenter map on current location
-        function recenterMap() {
-            if (!map || !currentPosition) return;
-            
-            map.setView([currentPosition.latitude, currentPosition.longitude], 15);
-        }
-        
-        // Play notification sound
-        function playNotificationSound() {
-            notificationSound.play().catch(e => console.log('Error playing sound:', e));
-            
-            // Fallback alert
-            alert("⚠️ EMERGENCY ALERT! You have been assigned to a new emergency.");
-        }
-        
-        // Format date and time
-        function formatDateTime(dateTimeStr) {
-            const dateTime = new Date(dateTimeStr);
-            return dateTime.toLocaleString();
-        }
-        
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add connectivity event listeners
-            window.addEventListener('online', updateConnectionStatus);
-            window.addEventListener('offline', updateConnectionStatus);
-            updateConnectionStatus();
-            
-            // Attach click handlers
-            loginBtn.addEventListener('click', login);
-            logoutBtn.addEventListener('click', logout);
-            registerBtn.addEventListener('click', registerAmbulance);
-            navigateBtn.addEventListener('click', navigateToEmergency);
-            arrivedBtn.addEventListener('click', markAsArrived);
-            completeBtn.addEventListener('click', markAsCompleted);
-            recenterBtn.addEventListener('click', recenterMap);
-            toggleRouteBtn.addEventListener('click', toggleRoute);
-        });
-    </script>
+        }).catch(()=>{});
+    }
+
+    function handleNewEmergency(emerg){
+        activeEmergency=emerg;
+        updateStatusPill(false);
+        emergencyDetails.innerHTML=`
+            <p><strong>Location:</strong> ${emerg.latitude}, ${emerg.longitude}</p>
+            <p><strong>Address:</strong> ${emerg.address||'Not available'}</p>
+            <p><strong>Caller:</strong> ${emerg.caller_phone}</p>
+            <p><strong>Time:</strong> ${formatDateTime(emerg.call_time)}</p>`;
+        emergencyAlert.classList.add('show');
+        addDestinationMarker(emerg.latitude,emerg.longitude,emerg.address);
+        if(currentPos) fitBoth(currentPos.latitude,currentPos.longitude,emerg.latitude,emerg.longitude);
+        playAlert();
+        toggleRouteBtn.style.display='flex';
+        updateRoute();
+    }
+
+    function hideEmergency(){
+        emergencyAlert.classList.remove('show');
+        if(map&&destMarker){ map.removeLayer(destMarker); destMarker=null; }
+        if(map&&routePoly){ map.removeLayer(routePoly); routePoly=null; }
+        routeInfo.classList.remove('show');
+        toggleRouteBtn.style.display='none';
+    }
+
+    function addDestinationMarker(lat,lng,addr){
+        if(!map) return;
+        if(destMarker) map.removeLayer(destMarker);
+        const icon=L.divIcon({className:'',html:`<div style="background:#ef4444;width:28px;height:28px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;">!</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+        destMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup(`<b>Emergency</b><br>${addr||'Unknown location'}`);
+    }
+
+    function fitBoth(la1,lo1,la2,lo2){
+        if(!map) return;
+        map.fitBounds(L.latLngBounds(L.latLng(la1,lo1),L.latLng(la2,lo2)),{padding:[50,50]});
+    }
+
+    function updateRoute(){
+        if(!activeEmergency||!currentPos||!map) return;
+        if(routePoly) map.removeLayer(routePoly);
+        routePoly=L.polyline([[currentPos.latitude,currentPos.longitude],[activeEmergency.latitude,activeEmergency.longitude]],{color:'#2563eb',weight:5,opacity:.75,dashArray:'8,10'}).addTo(map);
+        const dist=calcDist(currentPos.latitude,currentPos.longitude,activeEmergency.latitude,activeEmergency.longitude);
+        const eta=Math.round((dist/40)*60);
+        routeDistance.textContent=dist<1?`${Math.round(dist*1000)} m`:`${dist.toFixed(1)} km`;
+        routeETA.textContent=eta<1?'<1 min':eta<60?`${eta} min`:`${Math.floor(eta/60)}h ${eta%60}m`;
+        routeInfo.classList.add('show');
+    }
+
+    function calcDist(la1,lo1,la2,lo2){
+        const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
+        const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
+        return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    }
+
+    function navigateToEmergency(){
+        if(!activeEmergency||!currentPos) return;
+        window.open(`https://www.openstreetmap.org/directions?engine=graphhopper_car&route=${currentPos.latitude}%2C${currentPos.longitude}%3B${activeEmergency.latitude}%2C${activeEmergency.longitude}`,'_blank');
+    }
+
+    function markArrived(){
+        if(!activeEmergency||!ambulanceData) return;
+        fetch('/api/ambulance/mark-arrived',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ambulance_id:ambulanceData.ambulance_id,emergency_call_id:activeEmergency.id})})
+            .then(r=>r.json()).then(d=>{ if(d.success){ arrivedBtn.disabled=true; } else alert('Error: '+d.error); }).catch(()=>alert('Error connecting.'));
+    }
+
+    function markCompleted(){
+        if(!activeEmergency) return;
+        fetch('/api/ambulance/mark-completed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({emergency_call_id:activeEmergency.id})})
+            .then(r=>r.json()).then(d=>{ if(d.success){ hideEmergency(); activeEmergency=null; updateStatusPill(true); arrivedBtn.disabled=false; } else alert('Error: '+d.error); }).catch(()=>alert('Error connecting.'));
+    }
+
+    function toggleRoute(){
+        if(routePoly&&map.hasLayer(routePoly)){ map.removeLayer(routePoly); routeInfo.classList.remove('show'); }
+        else { updateRoute(); }
+    }
+
+    function updateStatusPill(available){
+        statusPill.className='status-pill '+(available?'available':'on-duty');
+        statusText.textContent=available?'Available':'On Duty';
+    }
+
+    function updateConnStatus(){
+        const online=navigator.onLine&&(socket?socket.connected:false);
+        connStatus.className='conn-badge '+(online?'online':'offline');
+        connStatus.textContent=online?'Online':'Offline';
+    }
+
+    function playAlert(){
+        document.getElementById('notificationSound').play().catch(()=>{});
+        alert('EMERGENCY ALERT! You have been assigned to a new emergency.');
+    }
+
+    function formatDateTime(s){ return s?new Date(s).toLocaleString():'N/A'; }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+        window.addEventListener('online', updateConnStatus);
+        window.addEventListener('offline', updateConnStatus);
+        loginBtn.addEventListener('click', login);
+        logoutBtn.addEventListener('click', logout);
+        registerBtn.addEventListener('click', registerAmbulance);
+        navigateBtn.addEventListener('click', navigateToEmergency);
+        arrivedBtn.addEventListener('click', markArrived);
+        completeBtn.addEventListener('click', markCompleted);
+        recenterBtn.addEventListener('click',()=>{ if(map&&currentPos) map.setView([currentPos.latitude,currentPos.longitude],15); });
+        toggleRouteBtn.addEventListener('click', toggleRoute);
+        updateConnStatus();
+    });
+</script>
 </body>
 </html>
