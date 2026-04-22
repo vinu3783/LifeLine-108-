@@ -157,9 +157,7 @@ Step 2 → Driver taps "Arrived" at the victim's location
 <br/>
 
 <div align="center">
-  <img src="photos/pro7.png" alt="Prototype 7" width="45%" />
-  &nbsp;
-  <img src="photos/pro9.png" alt="Prototype 9" width="45%" />
+  <img src="photos/pro9.png" alt="Prototype 9" width="60%" />
 </div>
 
 ---
