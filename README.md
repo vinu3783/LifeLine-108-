@@ -15,7 +15,7 @@
       <img src="https://img.shields.io/badge/🌐_Live_Demo-techmedics--108.onrender.com-46E3B7?style=for-the-badge&logo=render&logoColor=white" />
     </a>
     &nbsp;
-    <a href="[https://drive.google.com/file/d/1XYbmHxfMWaXSHama5ysZLa_DLIiKNXnn/view?usp=sharing](https://youtu.be/v0NK8BFeIeQ?si=d2zkiDU_SJxNH-gD)">
+    <a href="https://youtu.be/v0NK8BFeIeQ?si=d2zkiDU_SJxNH-gD">
       <img src="https://img.shields.io/badge/▶_Watch_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
     </a>
   </p>
