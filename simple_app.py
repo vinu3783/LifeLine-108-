@@ -201,6 +201,11 @@ def test():
         "database": os.path.exists(DATABASE)
     })
 
+@app.route('/ping')
+def ping():
+    """Lightweight health check — used by uptime monitors to keep the instance warm."""
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/api/config')
 def get_config():
     """Expose public config (Gemini key) to frontend"""
