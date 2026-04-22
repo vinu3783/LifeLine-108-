@@ -214,4 +214,3 @@ This project directly addresses:
   <p>© 2026 TechMedics Team · Built for Google Solution Challenge 2026</p>
 </div>
 
-Hello
