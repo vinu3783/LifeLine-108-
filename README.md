@@ -106,7 +106,7 @@ Step 2 → Driver taps "Arrived" at the victim's location
 
 ---
 
-## 📸 Screenshots
+## 📸 MVP Screenshots
 
 <div align="center">
   <img src="photos/1.jpeg" alt="Call Center Dashboard" width="45%" />
@@ -129,6 +129,41 @@ Step 2 → Driver taps "Arrived" at the victim's location
 </div>
 
 ---
+
+## 🖼️ Prototype Screenshots
+
+<div align="center">
+  <img src="photos/pro1.png" alt="Prototype 1" width="45%" />
+  &nbsp;
+  <img src="photos/pro2.png" alt="Prototype 2" width="45%" />
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="photos/pro3.png" alt="Prototype 3" width="45%" />
+  &nbsp;
+  <img src="photos/pro4.png" alt="Prototype 4" width="45%" />
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="photos/pro5.png" alt="Prototype 5" width="45%" />
+  &nbsp;
+  <img src="photos/pro6.png" alt="Prototype 6" width="45%" />
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="photos/pro7.png" alt="Prototype 7" width="45%" />
+  &nbsp;
+  <img src="photos/pro9.png" alt="Prototype 9" width="45%" />
+</div>
+
+---
+
 
 ## 📺 Demo Video
 
