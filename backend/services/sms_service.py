@@ -3,10 +3,18 @@ from flask import current_app as app
 
 class SMSService:
     def __init__(self):
-        self.account_sid = app.config['TWILIO_ACCOUNT_SID']
-        self.auth_token = app.config['TWILIO_AUTH_TOKEN']
-        self.twilio_phone = app.config['TWILIO_PHONE_NUMBER']
-        self.client = Client(self.account_sid, self.auth_token)
+        pass
+
+    def _get_client(self):
+        sid = app.config.get('TWILIO_ACCOUNT_SID', '')
+        token = app.config.get('TWILIO_AUTH_TOKEN', '')
+        if not sid or not token:
+            return None
+        return Client(sid, token)
+
+    @property
+    def twilio_phone(self):
+        return app.config.get('TWILIO_PHONE_NUMBER', '')
     
     def send_location_share_link(self, to_phone, location_link):
         """Send location sharing link to the victim"""
@@ -36,17 +44,19 @@ class SMSService:
     
     def _send_sms(self, to_phone, message):
         """Private method to send SMS using Twilio"""
+        client = self._get_client()
+        if not client:
+            app.logger.warning("Twilio not configured — SMS skipped.")
+            return {"success": False, "error": "Twilio not configured"}
         try:
-            # Make sure phone number starts with "+"
             if not to_phone.startswith('+'):
                 to_phone = '+' + to_phone
-                
-            message = self.client.messages.create(
+            msg = client.messages.create(
                 body=message,
                 from_=self.twilio_phone,
                 to=to_phone
             )
-            return {"success": True, "message_sid": message.sid}
+            return {"success": True, "message_sid": msg.sid}
         except Exception as e:
             app.logger.error(f"Error sending SMS: {str(e)}")
             return {"success": False, "error": str(e)}

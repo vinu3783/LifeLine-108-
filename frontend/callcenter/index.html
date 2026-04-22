@@ -11,407 +11,255 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --red:      #dc2626;
-            --red-dark: #991b1b;
-            --navy:     #0f172a;
-            --slate:    #1e293b;
-            --slate2:   #2d3f55;
-            --muted:    #64748b;
-            --border:   #e2e8f0;
-            --bg:       #f1f5f9;
-            --white:    #ffffff;
-            --green:    #16a34a;
-            --amber:    #d97706;
-            --blue:     #2563eb;
-            --purple:   #7c3aed;
-            --radius:   12px;
-            --sh:       0 2px 12px rgba(15,23,42,.08);
+            --red:#dc2626; --navy:#0f172a; --slate:#1e293b; --slate2:#2d3f55;
+            --muted:#64748b; --border:#e2e8f0; --bg:#f1f5f9; --white:#ffffff;
+            --green:#16a34a; --amber:#d97706; --blue:#2563eb; --radius:12px;
+            --sh:0 2px 12px rgba(15,23,42,.08);
         }
+        html,body{height:100%;}
+        body{font-family:'Inter',sans-serif;background:var(--bg);display:flex;height:100vh;overflow:hidden;font-size:13px;color:var(--navy);}
 
-        html, body { height: 100%; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            font-size: 13px;
-            color: var(--navy);
-        }
+        /* Toast */
+        #toast-container{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+        .toast{display:flex;align-items:flex-start;gap:10px;background:#1e293b;color:#f1f5f9;border-radius:10px;padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.4);font-size:13px;font-weight:500;max-width:340px;pointer-events:auto;animation:toastIn .25s ease-out;border-left:3px solid var(--blue);}
+        .toast.error{border-left-color:var(--red);}.toast.success{border-left-color:var(--green);}.toast.warning{border-left-color:var(--amber);}
+        .toast i{margin-top:1px;flex-shrink:0;}
+        @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
 
-        /* ══════════════ SIDEBAR ══════════════ */
-        .sidebar {
-            width: 280px;
-            flex-shrink: 0;
-            background: var(--navy);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        /* SIDEBAR */
+        .sidebar{width:280px;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;overflow:hidden;}
+        .sidebar-header{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07);}
+        .brand{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+        .brand-icon{width:38px;height:38px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;flex-shrink:0;}
+        .brand-name{font-size:15px;font-weight:800;color:#fff;line-height:1.2;}
+        .brand-sub{font-size:10px;color:#64748b;font-weight:500;}
+        .driver-portal-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px 14px;background:var(--blue);color:#fff;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600;transition:background .2s;}
+        .driver-portal-btn:hover{background:#1d4ed8;}
+        .sidebar-label{padding:12px 16px 6px;font-size:10px;font-weight:700;letter-spacing:.8px;color:#475569;text-transform:uppercase;}
+        .sidebar-scroll{flex:1;min-height:0;overflow-y:auto;padding:0 10px 16px;}
+        .sidebar-scroll::-webkit-scrollbar{width:3px;}.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+        .call-card{background:var(--slate);border-radius:10px;padding:11px 13px;margin-bottom:7px;cursor:pointer;border:2px solid transparent;transition:all .18s;}
+        .call-card:hover{background:var(--slate2);}.call-card.active{border-color:var(--red);background:rgba(220,38,38,.12);}
+        .call-card-id{font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;}
+        .call-card-phone{font-size:12px;color:#94a3b8;margin-bottom:4px;}
+        .call-card-time{font-size:11px;color:#64748b;}
+        .amb-row{display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px;margin-bottom:3px;}
+        .amb-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+        .amb-dot.available{background:#22c55e;}.amb-dot.unavailable{background:var(--red);}
+        .amb-name{font-size:12px;color:#cbd5e1;font-weight:500;}
 
-        .sidebar-header {
-            padding: 20px 18px 16px;
-            border-bottom: 1px solid rgba(255,255,255,.07);
-        }
-        .brand {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 14px;
-        }
-        .brand-icon {
-            width: 38px; height: 38px;
-            background: var(--red);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 17px; color: var(--white);
-            flex-shrink: 0;
-        }
-        .brand-name { font-size: 15px; font-weight: 800; color: var(--white); line-height: 1.2; }
-        .brand-sub  { font-size: 10px; color: #64748b; font-weight: 500; }
+        /* MAIN */
+        .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;height:100vh;}
+        .topbar{background:#fff;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);box-shadow:0 1px 4px rgba(15,23,42,.05);flex-shrink:0;gap:10px;}
+        .topbar h1{font-size:16px;font-weight:700;color:var(--navy);white-space:nowrap;}
+        .topbar-right{display:flex;align-items:center;gap:10px;}
+        .live-badge{display:flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;color:var(--green);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:700;}
+        .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:livep 1.4s ease-in-out infinite;}
+        @keyframes livep{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+        .ai-toggle-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+        .ai-toggle-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(124,58,237,.4);}
+        .ai-toggle-btn .ai-icon{font-size:14px;}
 
-        .driver-portal-btn {
-            display: flex; align-items: center; justify-content: center; gap: 7px;
-            width: 100%;
-            padding: 9px 14px;
-            background: var(--blue);
-            color: var(--white);
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 12px; font-weight: 600;
-            transition: background .2s;
-        }
-        .driver-portal-btn:hover { background: #1d4ed8; }
+        .content-scroll{flex:1;min-height:0;overflow-y:auto;padding:18px 22px;}
+        .content-scroll > *{margin-bottom:18px;}.content-scroll > *:last-child{margin-bottom:0;}
+        .content-scroll::-webkit-scrollbar{width:6px;}.content-scroll::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:4px;}.content-scroll::-webkit-scrollbar-track{background:#f1f5f9;}
 
-        .sidebar-section {
-            padding: 14px 18px 10px;
-            font-size: 10px; font-weight: 700; letter-spacing: .8px;
-            color: #475569; text-transform: uppercase;
-        }
+        /* Panels */
+        .panel{background:#fff;border-radius:var(--radius);box-shadow:var(--sh);overflow:hidden;}
+        .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+        .panel-header h2{font-size:14px;font-weight:700;color:var(--navy);}
+        .panel-body{padding:18px;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+        .form-group label{display:block;margin-bottom:5px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);}
+        .form-group input,.form-group select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;color:var(--navy);background:#fff;outline:none;transition:border-color .18s,box-shadow .18s;}
+        .form-group input:focus,.form-group select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
 
-        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 12px 16px; }
-        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+        /* Map */
+        .map-panel{background:#fff;border-radius:var(--radius);box-shadow:var(--sh);overflow:hidden;height:340px;position:relative;}
+        #map{width:100%;height:100%;}
+        .map-controls{position:absolute;top:10px;left:10px;z-index:10;display:flex;gap:6px;}
+        .map-ctrl-btn{padding:6px 12px;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;box-shadow:var(--sh);transition:all .18s;color:var(--navy);}
+        .map-ctrl-btn.active{background:var(--blue);color:#fff;}
+        .map-ctrl-btn:hover{background:var(--blue);color:#fff;}
+        .map-legend{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);padding:10px 13px;border-radius:10px;z-index:10;box-shadow:var(--sh);font-size:11px;}
+        .legend-item{display:flex;align-items:center;gap:7px;margin-bottom:4px;}.legend-item:last-child{margin-bottom:0;}
+        .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
-        .call-card {
-            background: var(--slate);
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all .18s;
-        }
-        .call-card:hover { background: var(--slate2); }
-        .call-card.active { border-color: var(--red); background: rgba(220,38,38,.12); }
-        .call-card-id   { font-weight: 700; font-size: 13px; color: var(--white); margin-bottom: 3px; }
-        .call-card-phone { font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
-        .call-card-time  { font-size: 11px; color: #64748b; }
+        /* Detail grid */
+        .details-panel{display:none;}.details-panel.show{display:block;}
+        .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+        .detail-cell{background:var(--bg);border-radius:8px;padding:9px 12px;}
+        .detail-cell label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:block;margin-bottom:3px;}
+        .detail-cell .val{font-size:13px;font-weight:600;color:var(--navy);word-break:break-word;}
 
-        .ambulance-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 6px;
-            border-radius: 8px;
-            margin-bottom: 4px;
-        }
-        .amb-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%; flex-shrink: 0;
-        }
-        .amb-dot.available   { background: #22c55e; }
-        .amb-dot.unavailable { background: var(--red); }
-        .amb-name { font-size: 12px; color: #cbd5e1; font-weight: 500; }
+        /* Badges */
+        .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+        .badge-initiated{background:#dbeafe;color:#1d4ed8;}.badge-location_shared{background:#fef9c3;color:#854d0e;}
+        .badge-assigned{background:#dcfce7;color:#166534;}.badge-arrived{background:#f3e8ff;color:#6b21a8;}
+        .badge-completed{background:#f1f5f9;color:#475569;}.badge-online{background:#dcfce7;color:#166534;}
+        .badge-offline{background:#fee2e2;color:#991b1b;}.badge-low{background:#fef9c3;color:#854d0e;}
+        .badge-unknown{background:#f1f5f9;color:#475569;}.badge-web{background:#dbeafe;color:#1d4ed8;}
+        .badge-sms{background:#ffedd5;color:#9a3412;}.badge-manual{background:#f3e8ff;color:#6b21a8;}
 
-        /* ══════════════ MAIN CONTENT ══════════════ */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        /* Link box */
+        .link-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:12px;}
+        .link-url{font-family:monospace;font-size:11px;color:var(--blue);word-break:break-all;margin-bottom:7px;}
+        .link-actions{display:flex;gap:7px;}
 
-        /* top bar */
-        .topbar {
-            background: var(--white);
-            padding: 14px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 4px rgba(15,23,42,.05);
-            flex-shrink: 0;
-        }
-        .topbar h1 { font-size: 17px; font-weight: 700; color: var(--navy); }
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .live-badge {
-            display: flex; align-items: center; gap: 6px;
-            background: #f0fdf4; border: 1px solid #bbf7d0;
-            color: var(--green); border-radius: 20px;
-            padding: 5px 12px; font-size: 11px; font-weight: 700;
-        }
-        .live-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--green);
-            animation: livepulse 1.4s ease-in-out infinite;
-        }
-        @keyframes livepulse {
-            0%,100% { opacity: 1; transform: scale(1); }
-            50% { opacity: .5; transform: scale(.8); }
-        }
+        /* SMS section */
+        .sms-section{display:none;background:#fffbeb;border:1px solid #fde68a;border-left:4px solid var(--amber);border-radius:8px;padding:14px;margin-bottom:14px;}
+        .sms-section.show{display:block;}
+        .sms-section h4{font-size:13px;font-weight:700;margin-bottom:10px;color:#92400e;}
+        .sms-code-box{display:inline-block;font-family:monospace;font-size:18px;font-weight:800;padding:5px 13px;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--navy);letter-spacing:2px;}
 
-        /* scroll area */
-        .content-scroll {
-            flex: 1; overflow-y: auto; padding: 20px 24px;
-            display: flex; flex-direction: column; gap: 20px;
-        }
-        .content-scroll::-webkit-scrollbar { width: 5px; }
-        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Timeline */
+        .timeline{padding:4px 0;}
+        .tl-item{display:flex;gap:13px;padding-bottom:14px;position:relative;}
+        .tl-item:last-child{padding-bottom:0;}
+        .tl-item:not(:last-child)::before{content:'';position:absolute;left:9px;top:20px;width:2px;height:calc(100% - 20px);background:var(--border);}
+        .tl-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;position:relative;z-index:1;}
+        .tl-dot.completed{background:var(--green);}.tl-dot.current{background:var(--blue);animation:tlp 1.5s ease-in-out infinite;}.tl-dot.pending{background:#cbd5e1;}
+        @keyframes tlp{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.5)}50%{box-shadow:0 0 0 6px rgba(37,99,235,0)}}
+        .tl-content{flex:1;}
+        .tl-label{font-size:13px;font-weight:600;color:var(--navy);}
+        .tl-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+        .tl-time{font-size:11px;color:#94a3b8;margin-top:2px;}
 
-        /* ── New Call Form ── */
-        .panel {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--sh);
-            overflow: hidden;
-        }
-        .panel-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .panel-header h2 { font-size: 14px; font-weight: 700; color: var(--navy); }
-        .panel-body { padding: 20px; }
+        /* Tracking */
+        .tracking-box{display:none;background:#eff6ff;border:1px solid #bfdbfe;border-left:4px solid var(--blue);border-radius:8px;padding:13px 15px;margin-bottom:14px;font-size:13px;}
+        .tracking-box.show{display:block;}
+        .tracking-box h4{font-size:13px;font-weight:700;color:#1e40af;margin-bottom:9px;}
+        .tracking-box div{margin-bottom:4px;color:#1e40af;}
 
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
-        .form-group input,
-        .form-group select {
-            width: 100%; padding: 10px 13px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px;
-            color: var(--navy); background: var(--white);
-            transition: border-color .18s, box-shadow .18s;
-            outline: none;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(37,99,235,.1);
-        }
+        /* Buttons */
+        .btn-row{display:flex;gap:9px;flex-wrap:wrap;}
+        .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
+        .btn-primary{background:var(--blue);color:#fff;}.btn-primary:hover:not(:disabled){background:#1d4ed8;}
+        .btn-success{background:#16a34a;color:#fff;}.btn-success:hover:not(:disabled){background:#15803d;}
+        .btn-danger{background:var(--red);color:#fff;}.btn-danger:hover:not(:disabled){background:#b91c1c;}
+        .btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}.btn-secondary:hover:not(:disabled){background:#e2e8f0;color:var(--navy);}
+        .btn-red{background:linear-gradient(135deg,var(--red),#9f1239);color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3);}
+        .btn-red:hover{box-shadow:0 6px 16px rgba(220,38,38,.4);transform:translateY(-1px);}
+        .btn:disabled{background:#e2e8f0!important;color:#94a3b8!important;cursor:not-allowed;box-shadow:none!important;transform:none!important;}
+        .emergency-path{stroke:#2563eb;stroke-width:3;stroke-dasharray:6,8;opacity:.75;}
 
-        /* map area */
-        .map-panel {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--sh);
-            overflow: hidden;
-            height: 340px;
-            position: relative;
+        /* ══ GEMINI AI PANEL ══ */
+        .ai-panel{
+            position:fixed;right:0;top:0;bottom:0;width:400px;
+            background:#fff;border-left:1px solid var(--border);
+            box-shadow:-4px 0 30px rgba(15,23,42,.12);
+            z-index:800;display:flex;flex-direction:column;
+            transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
         }
-        #map { width: 100%; height: 100%; }
-        .map-legend {
-            position: absolute; bottom: 12px; right: 12px;
-            background: rgba(255,255,255,.95);
-            backdrop-filter: blur(6px);
-            padding: 10px 14px;
-            border-radius: 10px;
-            z-index: 1000;
-            box-shadow: var(--sh);
-            font-size: 11px;
+        .ai-panel.open{transform:translateX(0);}
+        .ai-panel-header{
+            padding:16px 18px;
+            background:linear-gradient(135deg,#4f46e5,#7c3aed);
+            color:#fff;display:flex;align-items:center;justify-content:space-between;
+            flex-shrink:0;
         }
-        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-        .legend-item:last-child { margin-bottom: 0; }
-        .legend-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+        .ai-panel-title{display:flex;align-items:center;gap:10px;}
+        .ai-panel-title .gem-icon{
+            width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:10px;
+            display:flex;align-items:center;justify-content:center;font-size:16px;
+        }
+        .ai-panel-title h3{font-size:15px;font-weight:700;}
+        .ai-panel-title p{font-size:11px;opacity:.8;}
+        .ai-close-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .18s;}
+        .ai-close-btn:hover{background:rgba(255,255,255,.25);}
 
-        /* call details panel */
-        .details-panel { display: none; }
-        .details-panel.show { display: block; }
+        .ai-quick-btns{padding:12px;border-bottom:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;flex-shrink:0;}
+        .ai-quick-btn{padding:6px 11px;background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;}
+        .ai-quick-btn:hover{background:#ede9fe;}
 
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .detail-cell { background: var(--bg); border-radius: 8px; padding: 10px 14px; }
-        .detail-cell label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); display: block; margin-bottom: 4px; }
-        .detail-cell .val   { font-size: 13px; font-weight: 600; color: var(--navy); word-break: break-word; }
+        .ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+        .ai-messages::-webkit-scrollbar{width:3px;}.ai-messages::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px;}
 
-        /* status badges */
-        .badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 4px 10px; border-radius: 20px;
-            font-size: 11px; font-weight: 700;
-        }
-        .badge-initiated      { background:#dbeafe; color:#1d4ed8; }
-        .badge-location_shared { background:#fef9c3; color:#854d0e; }
-        .badge-assigned        { background:#dcfce7; color:#166534; }
-        .badge-arrived         { background:#f3e8ff; color:#6b21a8; }
-        .badge-completed       { background:#f1f5f9; color:#475569; }
-        .badge-online          { background:#dcfce7; color:#166534; }
-        .badge-offline         { background:#fee2e2; color:#991b1b; }
-        .badge-low             { background:#fef9c3; color:#854d0e; }
-        .badge-unknown         { background:#f1f5f9; color:#475569; }
-        .badge-web             { background:#dbeafe; color:#1d4ed8; }
-        .badge-sms             { background:#ffedd5; color:#9a3412; }
-        .badge-manual          { background:#f3e8ff; color:#6b21a8; }
+        .ai-msg{display:flex;gap:9px;max-width:100%;}
+        .ai-msg.user{flex-direction:row-reverse;}
+        .ai-msg-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+        .ai-msg.bot .ai-msg-avatar{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;}
+        .ai-msg.user .ai-msg-avatar{background:#e2e8f0;color:var(--muted);}
+        .ai-msg-bubble{padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.55;max-width:calc(100% - 44px);}
+        .ai-msg.bot .ai-msg-bubble{background:#f5f3ff;color:#1e1b4b;border-bottom-left-radius:4px;}
+        .ai-msg.user .ai-msg-bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
+        .ai-msg-bubble strong{font-weight:700;}
+        .ai-msg-bubble ul{padding-left:16px;margin-top:4px;}
+        .ai-msg-bubble li{margin-bottom:3px;}
 
-        /* location link box */
-        .link-box {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 14px;
-        }
-        .link-box .link-url {
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 11px; color: var(--blue);
-            word-break: break-all; margin-bottom: 8px;
-        }
-        .link-box .link-actions { display: flex; gap: 8px; }
+        .ai-typing{display:none;align-items:center;gap:9px;}
+        .ai-typing.show{display:flex;}
+        .ai-typing-dots{display:flex;gap:4px;}
+        .ai-typing-dots span{width:7px;height:7px;background:#a78bfa;border-radius:50%;animation:bounce .9s ease-in-out infinite;}
+        .ai-typing-dots span:nth-child(2){animation-delay:.15s;}
+        .ai-typing-dots span:nth-child(3){animation-delay:.3s;}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
-        /* SMS protocol section */
-        .sms-section {
-            display: none;
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-left: 4px solid var(--amber);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .sms-section.show { display: block; }
-        .sms-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: #92400e; }
-        .sms-code-box {
-            display: inline-block;
-            font-family: monospace; font-size: 18px; font-weight: 800;
-            padding: 6px 14px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--navy);
-            letter-spacing: 2px;
-        }
+        .ai-input-row{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;}
+        .ai-input{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .18s;}
+        .ai-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+        .ai-send-btn{width:38px;height:38px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .18s;flex-shrink:0;}
+        .ai-send-btn:hover{transform:scale(1.06);}
+        .ai-send-btn:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed;transform:none;}
 
-        /* timeline */
-        .timeline { padding: 4px 0; }
-        .tl-item { display: flex; gap: 14px; padding-bottom: 16px; position: relative; }
-        .tl-item:last-child { padding-bottom: 0; }
-        .tl-item:not(:last-child)::before {
-            content: '';
-            position: absolute; left: 9px; top: 20px;
-            width: 2px; height: calc(100% - 20px);
-            background: var(--border);
-        }
-        .tl-dot {
-            width: 20px; height: 20px; border-radius: 50%;
-            flex-shrink: 0; margin-top: 1px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: 700; color: var(--white);
-            position: relative; z-index: 1;
-        }
-        .tl-dot.completed { background: var(--green); }
-        .tl-dot.current   { background: var(--blue); animation: tl-pulse 1.5s ease-in-out infinite; }
-        .tl-dot.pending   { background: #cbd5e1; }
-        @keyframes tl-pulse {
-            0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,.5); }
-            50%     { box-shadow: 0 0 0 6px rgba(37,99,235,0); }
-        }
-        .tl-content { flex: 1; }
-        .tl-label  { font-size: 13px; font-weight: 600; color: var(--navy); }
-        .tl-desc   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-        .tl-time   { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .ai-powered-by{padding:6px 12px;background:#faf9ff;border-top:1px solid #ede9fe;font-size:10px;font-weight:600;color:#7c3aed;text-align:center;letter-spacing:.3px;flex-shrink:0;}
 
-        /* tracking info */
-        .tracking-box {
-            display: none;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-left: 4px solid var(--blue);
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            font-size: 13px;
-        }
-        .tracking-box.show { display: block; }
-        .tracking-box h4 { font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 10px; }
-        .tracking-box div { margin-bottom: 5px; color: #1e40af; }
-
-        /* action buttons row */
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 9px 16px;
-            border: none; border-radius: 8px;
-            font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: all .18s;
-        }
-        .btn-primary  { background: var(--blue); color: var(--white); }
-        .btn-primary:hover:not(:disabled)  { background: #1d4ed8; }
-        .btn-success  { background: #16a34a; color: var(--white); }
-        .btn-success:hover:not(:disabled)  { background: #15803d; }
-        .btn-danger   { background: var(--red); color: var(--white); }
-        .btn-danger:hover:not(:disabled)   { background: var(--red-dark); }
-        .btn-secondary { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-        .btn-secondary:hover:not(:disabled) { background: #e2e8f0; color: var(--navy); }
-        .btn-red-initiate {
-            background: linear-gradient(135deg, var(--red), #9f1239);
-            color: var(--white);
-            box-shadow: 0 4px 12px rgba(220,38,38,.3);
-        }
-        .btn-red-initiate:hover { box-shadow: 0 6px 16px rgba(220,38,38,.4); transform: translateY(-1px); }
-        .btn:disabled { background: #e2e8f0 !important; color: #94a3b8 !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
-
-        .emergency-path { stroke: #2563eb; stroke-width: 3; stroke-dasharray: 6,8; opacity: .75; }
+        /* Responsive */
+        @media(max-width:768px){.sidebar{width:220px;}.ai-panel{width:320px;}}
+        @media(max-width:600px){body{flex-direction:column;height:auto;overflow:auto;}.sidebar{width:100%;height:auto;max-height:40vh;overflow-y:auto;}.main{height:auto!important;overflow:visible;}.content-scroll{overflow:visible!important;min-height:unset!important;}.map-panel{height:240px;}.ai-panel{width:100%;}}
     </style>
 </head>
 <body>
+<div id="toast-container"></div>
 
-<!-- ═══ SIDEBAR ═══ -->
+<!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-header">
         <div class="brand">
             <div class="brand-icon"><i class="fa-solid fa-truck-medical"></i></div>
-            <div>
-                <div class="brand-name">LifeLine 108+</div>
-                <div class="brand-sub">Emergency Response System</div>
-            </div>
+            <div><div class="brand-name">LifeLine 108+</div><div class="brand-sub">Emergency Response System</div></div>
         </div>
         <a href="/api/ambulance/app" target="_blank" class="driver-portal-btn">
             <i class="fa-solid fa-steering-wheel"></i> Driver Portal
         </a>
     </div>
-
-    <div class="sidebar-section">Active Calls</div>
+    <div class="sidebar-label">Active Calls</div>
     <div class="sidebar-scroll" id="activeCalls">
-        <div class="call-card"><div class="call-card-id" style="color:#475569;">Loading calls…</div></div>
+        <div class="call-card"><div class="call-card-id" style="color:#475569;">Loading…</div></div>
     </div>
-
-    <div style="padding: 0 12px 6px;">
-        <div class="sidebar-section" style="padding:10px 6px 8px;">Ambulances</div>
+    <div style="padding:0 10px 6px;">
+        <div class="sidebar-label" style="padding:8px 6px 6px;">Ambulances</div>
         <div id="ambulances">
-            <div class="ambulance-row"><span class="amb-dot available"></span><span class="amb-name">Loading…</span></div>
+            <div class="amb-row"><span class="amb-dot available"></span><span class="amb-name">Loading…</span></div>
         </div>
     </div>
 </div>
 
-<!-- ═══ MAIN CONTENT ═══ -->
+<!-- MAIN -->
 <div class="main">
     <div class="topbar">
-        <h1><i class="fa-solid fa-headset" style="color:var(--red);margin-right:8px;"></i>Call Center Dashboard</h1>
+        <h1><i class="fa-solid fa-headset" style="color:var(--red);margin-right:7px;"></i>Call Center Dashboard</h1>
         <div class="topbar-right">
-            <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+            <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+            <button class="ai-toggle-btn" id="aiToggleBtn">
+                <span class="ai-icon">✦</span> Gemini AI Assistant
+            </button>
         </div>
     </div>
 
     <div class="content-scroll">
-
         <!-- New Call Form -->
         <div class="panel">
-            <div class="panel-header">
-                <h2><i class="fa-solid fa-phone-volume" style="color:var(--red);margin-right:8px;"></i>New Emergency Call</h2>
-            </div>
+            <div class="panel-header"><h2><i class="fa-solid fa-phone-volume" style="color:var(--red);margin-right:7px;"></i>New Emergency Call</h2></div>
             <div class="panel-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Caller Phone Number</label>
+                        <label>Caller Phone</label>
                         <input type="text" id="callerPhone" placeholder="+919876543210">
                     </div>
                     <div class="form-group">
-                        <label>Caller's Connectivity</label>
+                        <label>Connectivity</label>
                         <select id="connectivityStatus">
                             <option value="unknown">Unknown</option>
                             <option value="online">Online</option>
@@ -420,7 +268,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="btn btn-red-initiate" id="initiateCallBtn">
+                <button class="btn btn-red" id="initiateCallBtn">
                     <i class="fa-solid fa-siren-on"></i> Initiate Emergency Response
                 </button>
             </div>
@@ -429,22 +277,23 @@
         <!-- Map -->
         <div class="map-panel">
             <div id="map"></div>
-            <div class="map-legend">
-                <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> Emergency Location</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> Available Ambulance</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div> En Route</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div> Arrived</div>
+                <div class="map-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>Emergency</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Available</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div>En Route</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div>Arrived</div>
             </div>
         </div>
 
         <!-- Call Details -->
         <div class="panel details-panel" id="callDetails">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-file-waveform" style="color:var(--blue);margin-right:8px;"></i>Emergency Call Details</h2>
+                <h2><i class="fa-solid fa-file-waveform" style="color:var(--blue);margin-right:7px;"></i>Emergency Call Details</h2>
+                <button class="btn btn-secondary" id="aiAnalyzeBtn" style="padding:6px 12px;font-size:11px;">
+                    <span>✦</span> AI Analyse
+                </button>
             </div>
             <div class="panel-body">
-
-                <!-- Detail Grid -->
                 <div class="detail-grid">
                     <div class="detail-cell"><label>Call ID</label><div class="val" id="detailCallId">—</div></div>
                     <div class="detail-cell"><label>Caller Phone</label><div class="val" id="detailCallerPhone">—</div></div>
@@ -456,412 +305,535 @@
                     <div class="detail-cell"><label>Address</label><div class="val" id="detailAddress">—</div></div>
                     <div class="detail-cell" style="grid-column:1/-1;"><label>Assigned Ambulance</label><div class="val" id="detailAmbulance">—</div></div>
                 </div>
-
-                <!-- Location Link -->
-                <div class="link-box" id="detailLocationLink">
-                    <div class="link-url">Not available</div>
-                </div>
-
-                <!-- SMS Protocol -->
+                <div class="link-box" id="detailLocationLink"><div class="link-url" style="color:#94a3b8;">Not available</div></div>
                 <div class="sms-section" id="smsProtocolSection">
                     <h4><i class="fa-solid fa-mobile-screen" style="margin-right:6px;"></i>SMS Location Protocol</h4>
-                    <div class="detail-grid" style="margin-bottom:12px;">
+                    <div class="detail-grid" style="margin-bottom:10px;">
                         <div class="detail-cell"><label>SMS Code</label><div class="val"><span class="sms-code-box" id="detailSmsCode">—</span></div></div>
-                        <div class="detail-cell"><label>Code Expiry</label><div class="val" id="detailCodeExpiry">N/A</div></div>
-                        <div class="detail-cell" style="grid-column:1/-1;"><label>Protocol Status</label><div class="val" id="detailProtocolStatus">Not initiated</div></div>
+                        <div class="detail-cell"><label>Expiry</label><div class="val" id="detailCodeExpiry">N/A</div></div>
+                        <div class="detail-cell" style="grid-column:1/-1;"><label>Status</label><div class="val" id="detailProtocolStatus">Not initiated</div></div>
                     </div>
                     <div class="btn-row">
-                        <button class="btn btn-primary" id="initiateSmsProtocolBtn"><i class="fa-solid fa-paper-plane"></i> Initiate SMS</button>
-                        <button class="btn btn-secondary" id="resendSmsCodeBtn" disabled><i class="fa-solid fa-rotate-right"></i> Resend Code</button>
+                        <button class="btn btn-primary" id="initiateSmsProtocolBtn"><i class="fa-solid fa-paper-plane"></i>Initiate</button>
+                        <button class="btn btn-secondary" id="resendSmsCodeBtn" disabled><i class="fa-solid fa-rotate-right"></i>Resend</button>
                     </div>
                 </div>
-
-                <!-- Tracking -->
                 <div class="tracking-box" id="trackingInfo">
                     <h4><i class="fa-solid fa-location-dot" style="margin-right:6px;"></i>Ambulance Tracking</h4>
-                    <div id="trackingContent">Loading tracking information…</div>
+                    <div id="trackingContent">Loading…</div>
                 </div>
-
-                <!-- Timeline -->
-                <div class="panel" style="box-shadow:none;border:1px solid var(--border);margin-bottom:16px;">
+                <div class="panel" style="box-shadow:none;border:1px solid var(--border);margin-bottom:14px;">
                     <div class="panel-header"><h2>Emergency Timeline</h2></div>
-                    <div class="panel-body">
-                        <div class="timeline" id="timelineContent">—</div>
-                    </div>
+                    <div class="panel-body"><div class="timeline" id="timelineContent">—</div></div>
                 </div>
-
-                <!-- Action Buttons -->
                 <div class="btn-row">
-                    <button class="btn btn-secondary" id="shareLocationLinkBtn" disabled><i class="fa-solid fa-copy"></i> Copy Location Link</button>
-                    <button class="btn btn-success" id="assignAmbulanceBtn" disabled><i class="fa-solid fa-ambulance"></i> Assign Nearest Ambulance</button>
-                    <button class="btn btn-danger" id="completeCallBtn" disabled><i class="fa-solid fa-check-double"></i> Complete Call</button>
+                    <button class="btn btn-secondary" id="shareLocationLinkBtn" disabled><i class="fa-solid fa-copy"></i>Copy Link</button>
+                    <button class="btn btn-success" id="assignAmbulanceBtn" disabled><i class="fa-solid fa-ambulance"></i>Assign Ambulance</button>
+                    <button class="btn btn-danger" id="completeCallBtn" disabled><i class="fa-solid fa-check-double"></i>Complete Call</button>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-    </div><!-- /content-scroll -->
-</div><!-- /main -->
+<!-- GEMINI AI PANEL -->
+<div class="ai-panel" id="aiPanel">
+    <div class="ai-panel-header">
+        <div class="ai-panel-title">
+            <div class="gem-icon">✦</div>
+            <div><h3>Gemini AI Assistant</h3><p>Powered by Google Gemini</p></div>
+        </div>
+        <button class="ai-close-btn" id="aiCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <div class="ai-quick-btns">
+        <button class="ai-quick-btn" onclick="quickPrompt('triage')">Triage Assessment</button>
+        <button class="ai-quick-btn" onclick="quickPrompt('protocol')">Response Protocol</button>
+        <button class="ai-quick-btn" onclick="quickPrompt('summary')">Incident Summary</button>
+        <button class="ai-quick-btn" onclick="quickPrompt('resources')">Resources Needed</button>
+    </div>
+
+    <div class="ai-messages" id="aiMessages">
+        <div class="ai-msg bot">
+            <div class="ai-msg-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div class="ai-msg-bubble">
+                Hello! I'm your <strong>Gemini AI Dispatch Assistant</strong>. I can help you with:<br>
+                <ul>
+                    <li>Emergency triage & severity assessment</li>
+                    <li>Recommended response protocols</li>
+                    <li>Incident summary generation</li>
+                    <li>Dispatch recommendations</li>
+                </ul>
+                Select a call or ask me anything about the active emergency.
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-typing" id="aiTyping">
+        <div class="ai-msg-avatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">✦</div>
+        <div class="ai-typing-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <div class="ai-input-row">
+        <input class="ai-input" id="aiInput" placeholder="Ask about the emergency…" type="text">
+        <button class="ai-send-btn" id="aiSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+    <div class="ai-powered-by">✦ Powered by Google Gemini AI</div>
+</div>
+
 <script>
-    let map=null, markers={}, ambulanceMarkers={}, ambulancePaths={};
-    let currentCallId=null, activeCall=null, refreshInterval=null;
+/* ════════════════════════════════════
+   CONFIG
+   ════════════════════════════════════ */
+let GEMINI_KEY = '';
 
-    const activeCalls         = document.getElementById('activeCalls');
-    const ambulances          = document.getElementById('ambulances');
-    const callDetails         = document.getElementById('callDetails');
-    const callerPhone         = document.getElementById('callerPhone');
-    const connectivityStatus  = document.getElementById('connectivityStatus');
-    const initiateCallBtn     = document.getElementById('initiateCallBtn');
-    const shareLocationLinkBtn= document.getElementById('shareLocationLinkBtn');
-    const assignAmbulanceBtn  = document.getElementById('assignAmbulanceBtn');
-    const completeCallBtn     = document.getElementById('completeCallBtn');
-    const smsProtocolSection  = document.getElementById('smsProtocolSection');
-    const initiateSmsProtocolBtn= document.getElementById('initiateSmsProtocolBtn');
-    const resendSmsCodeBtn    = document.getElementById('resendSmsCodeBtn');
-    const timelineContent     = document.getElementById('timelineContent');
-    const trackingInfo        = document.getElementById('trackingInfo');
-    const trackingContent     = document.getElementById('trackingContent');
-
-    function initMap() {
-        map = L.map('map').setView([14.4644,75.9218],13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-            attribution:'&copy; OpenStreetMap contributors'
-        }).addTo(map);
-    }
-
-    function loadActiveCalls() {
-        fetch('/api/callcenter/active-calls').then(r=>r.json()).then(d=>{
-            if(d.success) displayActiveCalls(d.calls);
-        }).catch(()=>{});
-    }
-
-    function displayActiveCalls(calls) {
-        activeCalls.innerHTML='';
-        if(!calls.length){
-            activeCalls.innerHTML='<div class="call-card"><div class="call-card-id" style="color:#475569;">No active calls</div></div>';
-            return;
-        }
-        calls.forEach(call=>{
-            const el=document.createElement('div');
-            el.className='call-card'+(currentCallId===call.id?' active':'');
-            const smsIcon=call.location_method==='sms'?'<i class="fa-solid fa-message" style="color:#f97316;margin-right:4px;"></i>':'';
-            el.innerHTML=`
-                <div class="call-card-id">${smsIcon}Call #${call.id}</div>
-                <div class="call-card-phone">${call.caller_phone}</div>
-                <div class="call-card-time">${formatDateTime(call.call_time)}</div>
-                <div style="margin-top:6px;"><span class="badge badge-${call.status}">${formatStatus(call.status)}</span></div>`;
-            el.addEventListener('click',()=>loadCallDetails(call.id));
-            activeCalls.appendChild(el);
-            if(call.latitude && call.longitude) addOrUpdateMarker(call);
-        });
-    }
-
-    function loadAmbulances(){
-        fetch('/api/ambulance/all').then(r=>r.json()).then(d=>{
-            if(d.success) displayAmbulances(d.ambulances);
-        }).catch(()=>{});
-    }
-
-    function displayAmbulances(list){
-        ambulances.innerHTML='';
-        if(!list.length){ ambulances.innerHTML='<div class="ambulance-row"><span class="amb-name" style="color:#475569;">No ambulances</span></div>'; return; }
-        list.forEach(a=>{
-            const el=document.createElement('div');
-            el.className='ambulance-row';
-            el.innerHTML=`<span class="amb-dot ${a.is_available?'available':'unavailable'}"></span><span class="amb-name">${a.ambulance_id} — ${a.driver_name}</span>`;
-            ambulances.appendChild(el);
-            addOrUpdateAmbulanceMarker(a);
-        });
-    }
-
-    function loadCallDetails(callId){
-        currentCallId=callId;
-        document.querySelectorAll('.call-card').forEach(e=>e.classList.remove('active'));
-        fetch(`/api/callcenter/call/${callId}`).then(r=>r.json()).then(d=>{
-            if(d.success){
-                displayCallDetails(d.call);
-                activeCall=d.call;
-                const sel=Array.from(document.querySelectorAll('.call-card')).find(e=>e.querySelector('.call-card-id').textContent.includes(`#${callId}`));
-                if(sel) sel.classList.add('active');
-                startTrackingCall(callId);
-            }
-        }).catch(()=>{});
-    }
-
-    function startTrackingCall(callId){
-        if(refreshInterval) clearInterval(refreshInterval);
-        refreshInterval=setInterval(()=>{
-            if(!currentCallId) return;
-            fetch(`/api/callcenter/call/${currentCallId}`).then(r=>r.json()).then(d=>{
-                if(!d.success) return;
-                activeCall=d.call;
-                updateTrackingInfo(d.call);
-                updateSmsProtocolInfo(d.call);
-            }).catch(()=>{});
-        },5000);
-    }
-
-    function displayCallDetails(call){
-        callDetails.classList.add('show');
-        document.getElementById('detailCallId').textContent=call.id;
-        document.getElementById('detailCallerPhone').textContent=call.caller_phone;
-        document.getElementById('detailCallTime').textContent=formatDateTime(call.call_time);
-
-        let status=call.status;
-        if(status==='assigned' && call.pickup_time && !call.completion_time) status='arrived';
-        document.getElementById('detailStatus').innerHTML=`<span class="badge badge-${status}">${formatStatus(status)}</span>`;
-
-        const connMap={online:['online','Online'],offline:['offline','Offline (SMS Only)'],low_bandwidth:['low','Low Bandwidth']};
-        const [cc,ct]=connMap[call.connectivity_status]||['unknown','Unknown'];
-        document.getElementById('detailConnectivity').innerHTML=`<span class="badge badge-${cc}">${ct}</span>`;
-
-        const methMap={web:['web','Web Link'],sms:['sms','SMS Protocol'],manual:['manual','Manual Entry']};
-        const [mc,mt]=methMap[call.location_method]||['unknown',call.location_method||'Not determined'];
-        document.getElementById('detailLocationMethod').innerHTML=`<span class="badge badge-${mc}">${mt}</span>`;
-
-        document.getElementById('detailLocation').textContent=call.latitude?`${call.latitude}, ${call.longitude}`:'Not shared yet';
-        document.getElementById('detailAddress').textContent=call.address||'Not available';
-        if(call.latitude && map) map.setView([call.latitude,call.longitude],15);
-
-        document.getElementById('detailAmbulance').textContent=
-            call.assigned_ambulance?`${call.assigned_ambulance.ambulance_id} — ${call.assigned_ambulance.driver_name}`:
-            call.assigned_ambulance_id?`ID: ${call.assigned_ambulance_id}`:'Not assigned';
-
-        const linkEl=document.getElementById('detailLocationLink');
-        if(call.location_link_id){
-            const url=`${window.location.origin}/share-location/${call.location_link_id}`;
-            linkEl.innerHTML=`
-                <div class="link-url"><a href="${url}" target="_blank">${url}</a></div>
-                <div class="link-actions">
-                    <button onclick="copyToClipboard('${url}')" class="btn btn-secondary" style="padding:6px 12px;font-size:11px;"><i class="fa-solid fa-copy"></i> Copy</button>
-                    <button onclick="window.open('${url}','_blank')" class="btn btn-primary" style="padding:6px 12px;font-size:11px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
-                </div>`;
-        } else { linkEl.innerHTML='<div class="link-url" style="color:#94a3b8;">Not available</div>'; }
-
-        updateSmsProtocolInfo(call);
-        updateTimeline(call);
-        updateTrackingInfo(call);
-
-        shareLocationLinkBtn.disabled=!call.location_link_id;
-        assignAmbulanceBtn.disabled=!call.latitude||!call.longitude||!!call.assigned_ambulance_id;
-        completeCallBtn.disabled=call.status==='completed';
-    }
-
-    function updateSmsProtocolInfo(call){
-        const show=['initiated','location_requested'].includes(call.status)||(call.status==='location_shared'&&call.location_method==='sms');
-        if(show){
-            smsProtocolSection.classList.add('show');
-            const codeEl=document.getElementById('detailSmsCode');
-            const expEl=document.getElementById('detailCodeExpiry');
-            const protEl=document.getElementById('detailProtocolStatus');
-            if(call.sms_location_code){
-                codeEl.textContent=call.sms_location_code;
-                let expired=false;
-                if(call.sms_code_expiry){
-                    expired=new Date(call.sms_code_expiry)<new Date();
-                    expEl.textContent=expired?'EXPIRED':formatDateTime(call.sms_code_expiry);
-                    expEl.style.color=expired?'#dc2626':'inherit';
-                } else { expEl.textContent='No expiry set'; }
-                if(call.location_method==='sms'&&call.latitude){
-                    protEl.innerHTML='<span class="badge badge-assigned">Location received via SMS</span>';
-                } else if(expired){
-                    protEl.innerHTML='<span class="badge badge-completed">Code expired</span>';
-                } else {
-                    protEl.innerHTML='<span class="badge badge-initiated">Waiting for SMS response</span>';
-                }
-                initiateSmsProtocolBtn.disabled=!expired;
-                resendSmsCodeBtn.disabled=false;
-            } else {
-                codeEl.textContent='Not initiated';
-                expEl.textContent='N/A';
-                protEl.textContent='Not initiated';
-                initiateSmsProtocolBtn.disabled=false;
-                resendSmsCodeBtn.disabled=true;
-            }
-        } else { smsProtocolSection.classList.remove('show'); }
-    }
-
-    function updateTimeline(call){
-        const items=[];
-        items.push({s:'completed',label:'Call Initiated',time:call.call_time,desc:'Emergency call received'});
-        if(call.location_shared_time){
-            const via=call.location_method==='sms'?' via SMS':call.location_method==='web'?' via web link':'';
-            items.push({s:'completed',label:'Location Shared',time:call.location_shared_time,desc:`Exact location shared${via}`});
-        } else if(call.sms_location_code){
-            items.push({s:'current',label:'SMS Protocol Active',time:null,desc:'Waiting for SMS response with coordinates'});
-        } else if(call.location_link_id){
-            items.push({s:'current',label:'Awaiting Location',time:null,desc:'Web link sent — waiting for victim to share'});
-        } else {
-            items.push({s:'pending',label:'Location Sharing',time:null,desc:'Link not yet sent'});
-        }
-        if(call.assigned_time){
-            items.push({s:'completed',label:'Ambulance Assigned',time:call.assigned_time,desc:'Ambulance dispatched to emergency'});
-        } else if(call.latitude){
-            items.push({s:'current',label:'Assigning Ambulance',time:null,desc:'Ready to dispatch nearest unit'});
-        } else {
-            items.push({s:'pending',label:'Ambulance Assignment',time:null,desc:'Waiting for location'});
-        }
-        if(call.pickup_time){
-            items.push({s:'completed',label:'Ambulance Arrived',time:call.pickup_time,desc:'Unit reached the victim'});
-        } else if(call.assigned_time){
-            items.push({s:'current',label:'En Route',time:null,desc:'Ambulance travelling to location'});
-        } else {
-            items.push({s:'pending',label:'Arrival',time:null,desc:'Awaiting ambulance assignment'});
-        }
-        if(call.completion_time){
-            items.push({s:'completed',label:'Completed',time:call.completion_time,desc:'Emergency response concluded'});
-        } else if(call.pickup_time){
-            items.push({s:'current',label:'In Progress',time:null,desc:'Response ongoing'});
-        } else {
-            items.push({s:'pending',label:'Completion',time:null,desc:'Awaiting arrival'});
-        }
-
-        const icons={completed:'fa-check',current:'fa-circle-dot',pending:'fa-circle'};
-        timelineContent.innerHTML=items.map(i=>`
-            <div class="tl-item">
-                <div class="tl-dot ${i.s}"><i class="fa-solid ${icons[i.s]}" style="font-size:8px;"></i></div>
-                <div class="tl-content">
-                    <div class="tl-label">${i.label}</div>
-                    <div class="tl-desc">${i.desc}</div>
-                    ${i.time?`<div class="tl-time">${formatDateTime(i.time)}</div>`:''}
-                </div>
-            </div>`).join('');
-    }
-
-    function updateTrackingInfo(call){
-        if(call.assigned_ambulance_id && call.status!=='completed'){
-            trackingInfo.classList.add('show');
-            const amb=call.assigned_ambulance||ambulanceMarkers[call.assigned_ambulance_id]?._ambulanceData;
-            if(amb){
-                const dist=call.latitude&&amb.latitude?calculateDistance(amb.latitude,amb.longitude,call.latitude,call.longitude):null;
-                const eta=dist?Math.round((dist/30)*60):null;
-                const etaStr=call.pickup_time?`Arrived at ${formatDateTime(call.pickup_time)}`:
-                    eta?`~${eta<1?'<1':eta} min`:'Calculating…';
-                trackingContent.innerHTML=`
-                    <div><strong>Ambulance:</strong> ${amb.ambulance_id}</div>
-                    <div><strong>Driver:</strong> ${amb.driver_name} &nbsp; <strong>Phone:</strong> ${amb.driver_phone}</div>
-                    <div><strong>ETA:</strong> ${etaStr}</div>`;
-                if(call.latitude&&amb.latitude) drawAmbulancePath(call.id,call.latitude,call.longitude,amb.latitude,amb.longitude);
-            } else { trackingContent.innerHTML='Loading…'; }
-        } else {
-            trackingInfo.classList.remove('show');
-            if(ambulancePaths[call.id]){map.removeLayer(ambulancePaths[call.id]);delete ambulancePaths[call.id];}
-        }
-    }
-
-    function drawAmbulancePath(id,vlat,vlng,alat,alng){
-        if(ambulancePaths[id]) map.removeLayer(ambulancePaths[id]);
-        ambulancePaths[id]=L.polyline([[alat,alng],[vlat,vlng]],{className:'emergency-path'}).addTo(map);
-    }
-
-    function calculateDistance(la1,lo1,la2,lo2){
-        const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
-        const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
-        return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-    }
-
-    function copyToClipboard(text){
-        navigator.clipboard.writeText(text).then(()=>alert('Link copied!')).catch(()=>{
-            const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('Link copied!');
-        });
-    }
-
-    function addOrUpdateMarker(call){
-        if(!map) return;
-        if(markers[call.id]) map.removeLayer(markers[call.id]);
-        const icon=L.divIcon({className:'',html:`<div style="background:#ef4444;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
-        markers[call.id]=L.marker([call.latitude,call.longitude],{icon}).addTo(map)
-            .bindPopup(`<b>Call #${call.id}</b><br>${call.caller_phone}<br><span style="color:#64748b;">${formatStatus(call.status)}</span>`);
-    }
-
-    function addOrUpdateAmbulanceMarker(a){
-        if(!map) return;
-        if(ambulanceMarkers[a.id]) map.removeLayer(ambulanceMarkers[a.id]);
-        const color=a.is_available?'#22c55e':findCallAssignedToAmbulance(a.id)?.pickup_time?'#a855f7':'#f97316';
-        const icon=L.divIcon({className:'',html:`<div style="background:${color};width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;">A</div>`,iconSize:[20,20],iconAnchor:[10,10]});
-        const m=L.marker([a.latitude,a.longitude],{icon}).addTo(map)
-            .bindPopup(`<b>${a.ambulance_id}</b><br>${a.driver_name}<br>${a.is_available?'Available':'On Duty'}`);
-        m._ambulanceData=a;
-        ambulanceMarkers[a.id]=m;
-        if(activeCall&&activeCall.assigned_ambulance_id===a.id&&activeCall.latitude)
-            drawAmbulancePath(activeCall.id,activeCall.latitude,activeCall.longitude,a.latitude,a.longitude);
-    }
-
-    function findCallAssignedToAmbulance(id){ return activeCall?.assigned_ambulance_id===id?activeCall:null; }
-
-    function formatDateTime(s){ return s?new Date(s).toLocaleString():'N/A'; }
-    function formatStatus(s){
-        return {initiated:'Initiated',location_shared:'Location Shared',assigned:'Ambulance Assigned',arrived:'Arrived',completed:'Completed'}[s]||(s.charAt(0).toUpperCase()+s.slice(1));
-    }
-
-    function initiateCall(){
-        const phone=callerPhone.value.trim(), conn=connectivityStatus.value;
-        if(!phone){ alert('Please enter a phone number.'); return; }
-        fetch('/api/callcenter/initiate-call',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({caller_phone:phone,connectivity_status:conn})})
-            .then(r=>r.json()).then(d=>{
-                if(d.success){
-                    alert(`Emergency call initiated! ${d.sms_protocol_initiated?'SMS protocol initiated.':d.sms_sent?'Location link sent.':'Check console for link.'}`);
-                    callerPhone.value='';
-                    loadActiveCalls();
-                    loadCallDetails(d.emergency_call_id);
-                } else { alert('Error: '+d.error); }
-            }).catch(()=>alert('Error connecting to server.'));
-    }
-
-    function initiateSmsProtocol(resend=false){
-        if(!currentCallId) return;
-        fetch(`/api/callcenter/initiate-sms-protocol/${currentCallId}${resend?'?resend=true':''}`,{method:'POST',headers:{'Content-Type':'application/json'}})
-            .then(r=>r.json()).then(d=>{
-                if(d.success){ alert(`SMS protocol ${resend?'resent':'initiated'}.`); loadCallDetails(currentCallId); }
-                else alert('Error: '+d.error);
-            }).catch(()=>alert('Error connecting to server.'));
-    }
-
-    function copyLocationLink(){
-        if(!activeCall?.location_link_id) return;
-        copyToClipboard(`${window.location.origin}/share-location/${activeCall.location_link_id}`);
-    }
-
-    function assignNearestAmbulance(){
-        if(!currentCallId) return;
-        fetch(`/api/callcenter/assign-ambulance/${currentCallId}`,{method:'POST',headers:{'Content-Type':'application/json'}})
-            .then(r=>r.json()).then(d=>{
-                if(d.success){ alert(`Ambulance ${d.ambulance_id} assigned.\nDriver: ${d.driver_name}\nETA: ${d.eta_minutes} min`); loadActiveCalls();loadCallDetails(currentCallId);loadAmbulances(); }
-                else alert('Error: '+d.error);
-            }).catch(()=>alert('Error connecting to server.'));
-    }
-
-    function completeEmergencyCall(){
-        if(!currentCallId||!confirm('Mark this emergency as completed?')) return;
-        fetch(`/api/callcenter/complete-emergency/${currentCallId}`,{method:'POST',headers:{'Content-Type':'application/json'}})
-            .then(r=>r.json()).then(d=>{
-                if(d.success){ alert('Emergency completed.'); loadActiveCalls();loadCallDetails(currentCallId);loadAmbulances(); }
-                else alert('Error: '+d.error);
-            }).catch(()=>alert('Error connecting to server.'));
-    }
-
-    // Socket.IO
-    let socket=null;
+async function loadConfig() {
     try {
-        socket=io();
-        socket.on('location_update',d=>{ loadActiveCalls(); if(currentCallId===d.emergency_call_id) loadCallDetails(currentCallId); });
-        socket.on('assignment_update',d=>{ loadActiveCalls();loadAmbulances(); if(currentCallId===d.emergency_call_id) loadCallDetails(currentCallId); });
-        socket.on('ambulance_update',()=>loadAmbulances());
-    } catch(e){}
+        const r = await fetch('/api/config');
+        const c = await r.json();
+        GEMINI_KEY = c.geminiKey || '';
+    } catch(e) {}
+}
 
+/* ════════════════════════════════════
+   TOAST
+   ════════════════════════════════════ */
+function toast(msg, type='info', dur=4500) {
+    const icons={info:'fa-circle-info',error:'fa-circle-xmark',success:'fa-circle-check',warning:'fa-triangle-exclamation'};
+    const el=document.createElement('div');
+    el.className='toast '+type;
+    el.innerHTML=`<i class="fa-solid ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(()=>el.remove(), dur);
+}
+
+/* ════════════════════════════════════
+   STATE
+   ════════════════════════════════════ */
+let map=null, markers={}, ambulanceMarkers={}, ambulancePaths={};
+let currentCallId=null, activeCall=null, refreshInterval=null;
+
+/* ════════════════════════════════════
+   OPENSTREETMAP (Leaflet)
+   ════════════════════════════════════ */
+function initMap() {
+    map = L.map('map').setView([14.4644,75.9218],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom:19
+    }).addTo(map);
+}
+
+function mapSetView(lat,lng,zoom=15) {
+    if (map) map.setView([lat,lng],zoom);
+}
+
+function addEmergencyMarker(call) {
+    if (!map) return;
+    if (markers[call.id]) map.removeLayer(markers[call.id]);
+    const icon = L.divIcon({className:'',
+        html:`<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(220,38,38,.5);"></div>`,
+        iconSize:[16,16],iconAnchor:[8,8]});
+    markers[call.id] = L.marker([call.latitude,call.longitude],{icon}).addTo(map)
+        .bindPopup(`<b>Call #${call.id}</b><br>${call.caller_phone}<br><small>${fmtStatus(call.status)}</small>`);
+}
+
+function addAmbulanceMarker(a) {
+    if (!map) return;
+    if (ambulanceMarkers[a.id]) map.removeLayer(ambulanceMarkers[a.id]);
+    const color = a.is_available ? '#22c55e' : '#f97316';
+    const icon = L.divIcon({className:'',
+        html:`<div style="background:${color};width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;">A</div>`,
+        iconSize:[22,22],iconAnchor:[11,11]});
+    const m = L.marker([a.latitude,a.longitude],{icon}).addTo(map)
+        .bindPopup(`<b>${a.ambulance_id}</b><br>${a.driver_name}<br>${a.is_available?'Available':'On Duty'}`);
+    m._ambulanceData = a;
+    ambulanceMarkers[a.id] = m;
+}
+
+function drawRouteLine(callId,vLat,vLng,aLat,aLng) {
+    if (!map) return;
+    if (ambulancePaths[callId]) map.removeLayer(ambulancePaths[callId]);
+    ambulancePaths[callId] = L.polyline([[aLat,aLng],[vLat,vLng]],{
+        color:'#2563eb',weight:4,opacity:.8,dashArray:'8,10'
+    }).addTo(map);
+}
+
+/* ════════════════════════════════════
+   GEMINI AI
+   ════════════════════════════════════ */
+function buildSystemContext() {
+    if (!activeCall) return 'You are an emergency dispatch assistant for LifeLine 108+ ambulance service.';
+    return `You are an expert emergency dispatch assistant for LifeLine 108+ ambulance service in India.
+Current emergency call context:
+- Call ID: ${activeCall.id}
+- Caller Phone: ${activeCall.caller_phone}
+- Status: ${activeCall.status}
+- Location: ${activeCall.latitude ? activeCall.latitude+', '+activeCall.longitude : 'Not yet shared'}
+- Address: ${activeCall.address || 'Unknown'}
+- Connectivity: ${activeCall.connectivity_status || 'Unknown'}
+- Called at: ${activeCall.call_time}
+- Ambulance assigned: ${activeCall.assigned_ambulance ? activeCall.assigned_ambulance.ambulance_id : 'None'}
+
+Provide concise, actionable, professional responses. Use bullet points where helpful. Focus on emergency protocols.`;
+}
+
+async function callGemini(userMessage) {
+    if (!GEMINI_KEY || GEMINI_KEY === 'YOUR_GEMINI_API_KEY') {
+        return '⚠️ Gemini API key not configured. Add your GEMINI_API_KEY to the .env file.\n\nGet a free key at: https://aistudio.google.com/';
+    }
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                contents:[{role:'user', parts:[{text: buildSystemContext() + '\n\nUser question: ' + userMessage}]}],
+                generationConfig:{maxOutputTokens:600, temperature:0.3}
+            })
+        }
+    );
+    if (!response.ok) {
+        let errMsg = '';
+        try { const e = await response.json(); errMsg = e?.error?.message || ''; } catch(_) {}
+        if (response.status === 429)
+            return '⚠️ **Quota Exceeded (429)**\n\nThis API key has hit its daily/minute limit.\n\n**Fix:** Get a new free key at https://aistudio.google.com/ → update GEMINI_API_KEY in your .env file → restart the server.';
+        if (response.status === 400)
+            return `❌ **Invalid API Key (400)**\n\nGemini rejected the key. Check GEMINI_API_KEY in your .env is correct.\n\n${errMsg}`;
+        if (response.status === 403)
+            return `❌ **Forbidden (403)**\n\nMake sure the Gemini API is enabled in your Google Cloud project.\n\n${errMsg}`;
+        return `❌ Gemini error ${response.status}: ${errMsg || 'Unknown error'}`;
+    }
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+}
+
+function quickPrompt(type) {
+    const prompts = {
+        triage:   'Assess the severity of this emergency and recommend triage priority level (P1/P2/P3). What immediate actions should the dispatcher take?',
+        protocol: 'What is the standard emergency response protocol for this situation? List the key steps the call center operator and ambulance team should follow.',
+        summary:  'Generate a concise incident summary report for this emergency call including all key details, current status, and recommended next actions.',
+        resources:'What medical resources and equipment should the responding ambulance carry for this emergency? Any specialist backup needed?'
+    };
+    sendAiMessage(prompts[type]);
+}
+
+function addAiMessage(text, role) {
+    const container = document.getElementById('aiMessages');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    const avatar = role==='bot'
+        ? `<div class="ai-msg-avatar">✦</div>`
+        : `<div class="ai-msg-avatar"><i class="fa-solid fa-user"></i></div>`;
+    // Convert markdown-like to HTML
+    let html = text
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/^• (.+)$/gm,'<li>$1</li>')
+        .replace(/^- (.+)$/gm,'<li>$1</li>')
+        .replace(/^(\d+)\. (.+)$/gm,'<li>$2</li>')
+        .replace(/\n/g,'<br>');
+    if (html.includes('<li>')) html = html.replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>');
+    div.innerHTML = avatar + `<div class="ai-msg-bubble">${html}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendAiMessage(userText) {
+    const text = userText || document.getElementById('aiInput').value.trim();
+    if (!text) return;
+    document.getElementById('aiInput').value = '';
+    document.getElementById('aiSendBtn').disabled = true;
+
+    addAiMessage(text, 'user');
+
+    const typing = document.getElementById('aiTyping');
+    typing.classList.add('show');
+    document.getElementById('aiMessages').scrollTop = document.getElementById('aiMessages').scrollHeight;
+
+    try {
+        const reply = await callGemini(text);
+        typing.classList.remove('show');
+        addAiMessage(reply, 'bot');
+    } catch(e) {
+        typing.classList.remove('show');
+        addAiMessage('❌ Network error — could not reach the Gemini API. Check your internet connection.', 'bot');
+    }
+    document.getElementById('aiSendBtn').disabled = false;
+}
+
+/* ════════════════════════════════════
+   CALL CENTER LOGIC
+   ════════════════════════════════════ */
+const activeCalls         = document.getElementById('activeCalls');
+const ambulances          = document.getElementById('ambulances');
+const callDetails         = document.getElementById('callDetails');
+const callerPhone         = document.getElementById('callerPhone');
+const connectivityStatus  = document.getElementById('connectivityStatus');
+const initiateCallBtn     = document.getElementById('initiateCallBtn');
+const shareLocationLinkBtn= document.getElementById('shareLocationLinkBtn');
+const assignAmbulanceBtn  = document.getElementById('assignAmbulanceBtn');
+const completeCallBtn     = document.getElementById('completeCallBtn');
+const smsProtocolSection  = document.getElementById('smsProtocolSection');
+const initiateSmsProtocolBtn = document.getElementById('initiateSmsProtocolBtn');
+const resendSmsCodeBtn    = document.getElementById('resendSmsCodeBtn');
+const timelineContent     = document.getElementById('timelineContent');
+const trackingInfo        = document.getElementById('trackingInfo');
+const trackingContent     = document.getElementById('trackingContent');
+
+function loadActiveCalls(){
+    fetch('/api/callcenter/active-calls').then(r=>r.json()).then(d=>{
+        if(d.success) displayActiveCalls(d.calls);
+    }).catch(()=>{});
+}
+
+function displayActiveCalls(calls){
+    activeCalls.innerHTML='';
+    if(!calls.length){ activeCalls.innerHTML='<div class="call-card"><div class="call-card-id" style="color:#475569;">No active calls</div></div>'; return; }
+    calls.forEach(call=>{
+        const el=document.createElement('div');
+        el.className='call-card'+(currentCallId===call.id?' active':'');
+        el.innerHTML=`<div class="call-card-id">${call.location_method==='sms'?'📱 ':''}Call #${call.id}</div>
+            <div class="call-card-phone">${call.caller_phone}</div>
+            <div class="call-card-time">${fmtDT(call.call_time)}</div>
+            <div style="margin-top:5px;"><span class="badge badge-${call.status}">${fmtStatus(call.status)}</span></div>`;
+        el.addEventListener('click',()=>loadCallDetails(call.id));
+        activeCalls.appendChild(el);
+        if(call.latitude) addEmergencyMarker(call);
+    });
+}
+
+function loadAmbulances(){
+    fetch('/api/ambulance/all').then(r=>r.json()).then(d=>{ if(d.success) displayAmbulances(d.ambulances); }).catch(()=>{});
+}
+
+function displayAmbulances(list){
+    ambulances.innerHTML='';
+    if(!list.length){ ambulances.innerHTML='<div class="amb-row"><span class="amb-name" style="color:#475569;">None registered</span></div>'; return; }
+    list.forEach(a=>{
+        const el=document.createElement('div');
+        el.className='amb-row';
+        el.innerHTML=`<span class="amb-dot ${a.is_available?'available':'unavailable'}"></span><span class="amb-name">${a.ambulance_id} — ${a.driver_name}</span>`;
+        ambulances.appendChild(el);
+        addAmbulanceMarker(a);
+    });
+}
+
+function loadCallDetails(callId){
+    currentCallId=callId;
+    document.querySelectorAll('.call-card').forEach(e=>e.classList.remove('active'));
+    fetch(`/api/callcenter/call/${callId}`).then(r=>r.json()).then(d=>{
+        if(d.success){
+            displayCallDetails(d.call); activeCall=d.call;
+            const sel=Array.from(document.querySelectorAll('.call-card')).find(e=>e.querySelector('.call-card-id').textContent.includes(`#${callId}`));
+            if(sel) sel.classList.add('active');
+            startTrackingCall(callId);
+        }
+    }).catch(()=>{});
+}
+
+function startTrackingCall(callId){
+    if(refreshInterval) clearInterval(refreshInterval);
+    refreshInterval=setInterval(()=>{
+        if(!currentCallId) return;
+        fetch(`/api/callcenter/call/${currentCallId}`).then(r=>r.json()).then(d=>{
+            if(!d.success) return;
+            activeCall=d.call;
+            updateTrackingInfo(d.call);
+            updateSmsProtocolInfo(d.call);
+        }).catch(()=>{});
+    },5000);
+}
+
+function displayCallDetails(call){
+    callDetails.classList.add('show');
+    document.getElementById('detailCallId').textContent=call.id;
+    document.getElementById('detailCallerPhone').textContent=call.caller_phone;
+    document.getElementById('detailCallTime').textContent=fmtDT(call.call_time);
+    let status=call.status;
+    if(status==='assigned'&&call.pickup_time&&!call.completion_time) status='arrived';
+    document.getElementById('detailStatus').innerHTML=`<span class="badge badge-${status}">${fmtStatus(status)}</span>`;
+    const connMap={online:['online','Online'],offline:['offline','Offline'],low_bandwidth:['low','Low Bandwidth']};
+    const[cc,ct]=connMap[call.connectivity_status]||['unknown','Unknown'];
+    document.getElementById('detailConnectivity').innerHTML=`<span class="badge badge-${cc}">${ct}</span>`;
+    const mMap={web:['web','Web Link'],sms:['sms','SMS'],manual:['manual','Manual']};
+    const[mc,mt]=mMap[call.location_method]||['unknown',call.location_method||'—'];
+    document.getElementById('detailLocationMethod').innerHTML=`<span class="badge badge-${mc}">${mt}</span>`;
+    document.getElementById('detailLocation').textContent=call.latitude?`${call.latitude}, ${call.longitude}`:'Not shared';
+    document.getElementById('detailAddress').textContent=call.address||'—';
+    if(call.latitude) mapSetView(call.latitude,call.longitude);
+    document.getElementById('detailAmbulance').textContent=call.assigned_ambulance?`${call.assigned_ambulance.ambulance_id} — ${call.assigned_ambulance.driver_name}`:call.assigned_ambulance_id?`ID: ${call.assigned_ambulance_id}`:'Not assigned';
+    const linkEl=document.getElementById('detailLocationLink');
+    if(call.location_link_id){
+        const url=`${window.location.origin}/share-location/${call.location_link_id}`;
+        linkEl.innerHTML=`<div class="link-url"><a href="${url}" target="_blank">${url}</a></div>
+            <div class="link-actions">
+                <button onclick="copyToClipboard('${url}')" class="btn btn-secondary" style="padding:5px 11px;font-size:11px;"><i class="fa-solid fa-copy"></i> Copy</button>
+                <button onclick="window.open('${url}','_blank')" class="btn btn-primary" style="padding:5px 11px;font-size:11px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+            </div>`;
+    } else { linkEl.innerHTML='<div class="link-url" style="color:#94a3b8;">Not available</div>'; }
+    updateSmsProtocolInfo(call); updateTimeline(call); updateTrackingInfo(call);
+    shareLocationLinkBtn.disabled=!call.location_link_id;
+    assignAmbulanceBtn.disabled=!call.latitude||!call.longitude||!!call.assigned_ambulance_id;
+    completeCallBtn.disabled=call.status==='completed';
+}
+
+function updateSmsProtocolInfo(call){
+    const show=['initiated','location_requested'].includes(call.status)||(call.status==='location_shared'&&call.location_method==='sms');
+    if(show){
+        smsProtocolSection.classList.add('show');
+        const codeEl=document.getElementById('detailSmsCode'),expEl=document.getElementById('detailCodeExpiry'),protEl=document.getElementById('detailProtocolStatus');
+        if(call.sms_location_code){
+            codeEl.textContent=call.sms_location_code;
+            let expired=false;
+            if(call.sms_code_expiry){expired=new Date(call.sms_code_expiry)<new Date();expEl.textContent=expired?'EXPIRED':fmtDT(call.sms_code_expiry);expEl.style.color=expired?'#dc2626':'inherit';}
+            else{expEl.textContent='No expiry';}
+            if(call.location_method==='sms'&&call.latitude) protEl.innerHTML='<span class="badge badge-assigned">Received via SMS</span>';
+            else if(expired) protEl.innerHTML='<span class="badge badge-completed">Expired</span>';
+            else protEl.innerHTML='<span class="badge badge-initiated">Waiting for response</span>';
+            initiateSmsProtocolBtn.disabled=!expired; resendSmsCodeBtn.disabled=false;
+        } else {
+            codeEl.textContent='Not initiated'; expEl.textContent='N/A'; protEl.textContent='Not initiated';
+            initiateSmsProtocolBtn.disabled=false; resendSmsCodeBtn.disabled=true;
+        }
+    } else { smsProtocolSection.classList.remove('show'); }
+}
+
+function updateTimeline(call){
+    const items=[
+        {s:'completed',label:'Call Initiated',time:call.call_time,desc:'Emergency call received'},
+    ];
+    if(call.location_shared_time){items.push({s:'completed',label:'Location Shared',time:call.location_shared_time,desc:`Via ${call.location_method||'web'}`});}
+    else if(call.sms_location_code){items.push({s:'current',label:'SMS Protocol Active',time:null,desc:'Waiting for SMS response'});}
+    else if(call.location_link_id){items.push({s:'current',label:'Awaiting Location',time:null,desc:'Web link sent'});}
+    else{items.push({s:'pending',label:'Location Sharing',time:null,desc:'Link not sent'});}
+    if(call.assigned_time){items.push({s:'completed',label:'Ambulance Assigned',time:call.assigned_time,desc:'Ambulance dispatched'});}
+    else if(call.latitude){items.push({s:'current',label:'Ready to Assign',time:null,desc:'Awaiting assignment'});}
+    else{items.push({s:'pending',label:'Ambulance Assignment',time:null,desc:'Need location first'});}
+    if(call.pickup_time){items.push({s:'completed',label:'Arrived',time:call.pickup_time,desc:'Unit at scene'});}
+    else if(call.assigned_time){items.push({s:'current',label:'En Route',time:null,desc:'Ambulance travelling'});}
+    else{items.push({s:'pending',label:'Arrival',time:null,desc:'Awaiting dispatch'});}
+    if(call.completion_time){items.push({s:'completed',label:'Completed',time:call.completion_time,desc:'Response concluded'});}
+    else if(call.pickup_time){items.push({s:'current',label:'In Progress',time:null,desc:'On scene'});}
+    else{items.push({s:'pending',label:'Completion',time:null,desc:'Awaiting arrival'});}
+    const icons={completed:'fa-check',current:'fa-circle-dot',pending:'fa-circle'};
+    timelineContent.innerHTML=items.map(i=>`
+        <div class="tl-item">
+            <div class="tl-dot ${i.s}"><i class="fa-solid ${icons[i.s]}" style="font-size:8px;"></i></div>
+            <div class="tl-content">
+                <div class="tl-label">${i.label}</div>
+                <div class="tl-desc">${i.desc}</div>
+                ${i.time?`<div class="tl-time">${fmtDT(i.time)}</div>`:''}
+            </div>
+        </div>`).join('');
+}
+
+function updateTrackingInfo(call){
+    if(call.assigned_ambulance_id&&call.status!=='completed'){
+        trackingInfo.classList.add('show');
+        const amb=call.assigned_ambulance||ambulanceMarkers[call.assigned_ambulance_id]?._ambulanceData;
+        if(amb){
+            const dist=call.latitude&&amb.latitude?calcDist(amb.latitude,amb.longitude,call.latitude,call.longitude):null;
+            const eta=dist?Math.round((dist/30)*60):null;
+            trackingContent.innerHTML=`
+                <div><strong>Ambulance:</strong> ${amb.ambulance_id} &nbsp; <strong>Driver:</strong> ${amb.driver_name}</div>
+                <div><strong>Phone:</strong> ${amb.driver_phone}</div>
+                <div><strong>ETA:</strong> ${call.pickup_time?`Arrived at ${fmtDT(call.pickup_time)}`:eta?`~${eta<1?'<1':eta} min`:'Calculating…'}</div>`;
+            if(call.latitude&&amb.latitude) drawRouteLine(call.id,call.latitude,call.longitude,amb.latitude,amb.longitude);
+        } else { trackingContent.innerHTML='Loading…'; }
+    } else { trackingInfo.classList.remove('show'); }
+}
+
+function calcDist(la1,lo1,la2,lo2){
+    const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
+    const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function copyToClipboard(text){
+    navigator.clipboard.writeText(text).then(()=>toast('Link copied!','success')).catch(()=>{
+        const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Copied!','success');
+    });
+}
+
+function initiateCall(){
+    const phone=callerPhone.value.trim(),conn=connectivityStatus.value;
+    if(!phone){toast('Please enter a phone number.','warning');return;}
+    fetch('/api/callcenter/initiate-call',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({caller_phone:phone,connectivity_status:conn})})
+        .then(r=>r.json()).then(d=>{
+            if(d.success){
+                toast(`Call initiated! ${d.sms_protocol_initiated?'SMS protocol sent.':d.sms_sent?'Link sent.':'Ready.'}`, 'success');
+                callerPhone.value=''; loadActiveCalls(); loadCallDetails(d.emergency_call_id);
+            } else toast('Error: '+d.error,'error');
+        }).catch(()=>toast('Server connection error.','error'));
+}
+
+function initiateSmsProtocol(resend=false){
+    if(!currentCallId) return;
+    fetch(`/api/callcenter/initiate-sms-protocol/${currentCallId}${resend?'?resend=true':''}`,{method:'POST',headers:{'Content-Type':'application/json'}})
+        .then(r=>r.json()).then(d=>{ if(d.success){toast(`SMS ${resend?'resent':'initiated'}.`,'success');loadCallDetails(currentCallId);} else toast('Error: '+d.error,'error'); }).catch(()=>toast('Error.','error'));
+}
+
+function copyLocationLink(){ if(!activeCall?.location_link_id) return; copyToClipboard(`${window.location.origin}/share-location/${activeCall.location_link_id}`); }
+
+function assignNearestAmbulance(){
+    if(!currentCallId) return;
+    fetch(`/api/callcenter/assign-ambulance/${currentCallId}`,{method:'POST',headers:{'Content-Type':'application/json'}})
+        .then(r=>r.json()).then(d=>{ if(d.success){toast(`${d.ambulance_id} assigned — ETA ${d.eta_minutes} min`,'success');loadActiveCalls();loadCallDetails(currentCallId);loadAmbulances();} else toast('Error: '+d.error,'error'); }).catch(()=>toast('Error.','error'));
+}
+
+function completeEmergencyCall(){
+    if(!currentCallId||!window.confirm('Mark as completed?')) return;
+    fetch(`/api/callcenter/complete-emergency/${currentCallId}`,{method:'POST',headers:{'Content-Type':'application/json'}})
+        .then(r=>r.json()).then(d=>{ if(d.success){toast('Completed.','success');loadActiveCalls();loadCallDetails(currentCallId);loadAmbulances();} else toast('Error: '+d.error,'error'); }).catch(()=>toast('Error.','error'));
+}
+
+function fmtDT(s){ return s?new Date(s).toLocaleString():'N/A'; }
+function fmtStatus(s){ return {initiated:'Initiated',location_shared:'Location Shared',assigned:'Assigned',arrived:'Arrived',completed:'Completed'}[s]||(s?.charAt(0).toUpperCase()+s?.slice(1)||s); }
+
+/* Socket.IO */
+let socket=null;
+try{
+    socket=io();
+    socket.on('location_update',d=>{loadActiveCalls();if(currentCallId===d.emergency_call_id)loadCallDetails(currentCallId);});
+    socket.on('assignment_update',d=>{loadActiveCalls();loadAmbulances();if(currentCallId===d.emergency_call_id)loadCallDetails(currentCallId);});
+    socket.on('ambulance_update',()=>loadAmbulances());
+}catch(e){}
+
+/* ════════════════════════════════════
+   INIT
+   ════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadConfig();
+    initMap();
+
+    if (!GEMINI_KEY || GEMINI_KEY === 'YOUR_GEMINI_API_KEY') {
+        toast('Add GEMINI_API_KEY to .env to enable the AI assistant', 'warning', 7000);
+    }
+
+    loadActiveCalls();
+    loadAmbulances();
+    setInterval(()=>{ loadActiveCalls(); loadAmbulances(); }, 30000);
+
+    // AI Panel
+    document.getElementById('aiToggleBtn').addEventListener('click',()=>document.getElementById('aiPanel').classList.add('open'));
+    document.getElementById('aiCloseBtn').addEventListener('click',()=>document.getElementById('aiPanel').classList.remove('open'));
+    document.getElementById('aiSendBtn').addEventListener('click',()=>sendAiMessage());
+    document.getElementById('aiInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAiMessage();} });
+    document.getElementById('aiAnalyzeBtn').addEventListener('click',()=>{
+        document.getElementById('aiPanel').classList.add('open');
+        sendAiMessage('Analyse this emergency call and give me a full triage assessment, recommended actions, and any concerns.');
+    });
+
+    // Existing buttons
     initiateCallBtn.addEventListener('click', initiateCall);
     shareLocationLinkBtn.addEventListener('click', copyLocationLink);
     assignAmbulanceBtn.addEventListener('click', assignNearestAmbulance);
     completeCallBtn.addEventListener('click', completeEmergencyCall);
     initiateSmsProtocolBtn.addEventListener('click',()=>initiateSmsProtocol(false));
     resendSmsCodeBtn.addEventListener('click',()=>initiateSmsProtocol(true));
-
-    document.addEventListener('DOMContentLoaded',()=>{
-        initMap(); loadActiveCalls(); loadAmbulances();
-        setInterval(()=>{ loadActiveCalls(); loadAmbulances(); }, 30000);
-    });
+});
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 </body>
 </html>

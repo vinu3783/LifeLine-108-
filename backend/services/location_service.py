@@ -5,7 +5,11 @@ from flask import current_app as app
 
 class LocationService:
     def __init__(self):
-        self.user_agent = app.config['NOMINATIM_USER_AGENT']
+        pass
+
+    @property
+    def user_agent(self):
+        return app.config.get('NOMINATIM_USER_AGENT', 'LifeLine108Plus/1.0')
     
     def generate_location_link_id(self):
         """Generate a unique ID for location sharing link"""

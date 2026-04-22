@@ -1,3 +1,5 @@
+import math
+import requests as http_requests
 from flask import Blueprint, request, jsonify, render_template
 from backend.models import db, Ambulance, EmergencyCall
 from backend.services.ambulance_service import AmbulanceService
@@ -150,3 +152,115 @@ def get_all_ambulances():
         "success": True,
         "ambulances": [ambulance.to_dict() for ambulance in ambulances]
     })
+
+@ambulance_bp.route('/nearest-hospital', methods=['GET'])
+def nearest_hospital():
+    """
+    Find the nearest hospital to a given latitude/longitude using
+    the free OpenStreetMap Overpass API — no API key required.
+    Query params: lat, lng
+    """
+    lat = request.args.get('lat', type=float)
+    lng = request.args.get('lng', type=float)
+
+    if lat is None or lng is None:
+        return jsonify({"success": False, "error": "lat and lng are required"}), 400
+
+    # Try with 5 km radius first, expand to 15 km if nothing found
+    for radius in [5000, 15000, 30000]:
+        overpass_url = "https://overpass-api.de/api/interpreter"
+        query = f"""
+        [out:json][timeout:10];
+        (
+          node["amenity"="hospital"](around:{radius},{lat},{lng});
+          way["amenity"="hospital"](around:{radius},{lat},{lng});
+          node["amenity"="clinic"](around:{radius},{lat},{lng});
+          node["healthcare"="hospital"](around:{radius},{lat},{lng});
+        );
+        out center 10;
+        """
+        _headers = {
+            'User-Agent': 'LifeLine108Plus/1.0 (emergency-response; contact@lifeline108.app)',
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        try:
+            resp = http_requests.post(
+                overpass_url,
+                data={'data': query},
+                headers=_headers,
+                timeout=15
+            )
+            resp.raise_for_status()
+            elements = resp.json().get('elements', [])
+        except http_requests.exceptions.HTTPError as exc:
+            # Don't abort on a single radius — log and try wider
+            if exc.response is not None and exc.response.status_code in (429, 504):
+                continue   # rate limited or timeout → try wider radius
+            return jsonify({"success": False, "error": f"Overpass API error: {str(exc)}"}), 502
+        except Exception as exc:
+            return jsonify({"success": False, "error": f"Overpass API error: {str(exc)}"}), 502
+
+        if not elements:
+            continue  # widen search
+
+        # Pick the closest element
+        def element_coords(el):
+            if el['type'] == 'node':
+                return el['lat'], el['lon']
+            # way has a 'center'
+            c = el.get('center', {})
+            return c.get('lat'), c.get('lon')
+
+        def haversine(la1, lo1, la2, lo2):
+            R = 6371000  # metres
+            p = math.pi / 180
+            a = (math.sin((la2 - la1) * p / 2) ** 2 +
+                 math.cos(la1 * p) * math.cos(la2 * p) *
+                 math.sin((lo2 - lo1) * p / 2) ** 2)
+            return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        best = None
+        best_dist = float('inf')
+        for el in elements:
+            elat, elng = element_coords(el)
+            if elat is None or elng is None:
+                continue
+            d = haversine(lat, lng, elat, elng)
+            if d < best_dist:
+                best_dist = d
+                best = el
+
+        if best is None:
+            continue
+
+        blat, blng = element_coords(best)
+        tags = best.get('tags', {})
+        name = (tags.get('name') or
+                tags.get('name:en') or
+                tags.get('operator') or
+                'Nearest Hospital')
+        address_parts = [
+            tags.get('addr:housenumber', ''),
+            tags.get('addr:street', ''),
+            tags.get('addr:city', ''),
+        ]
+        address = ', '.join(p for p in address_parts if p) or tags.get('addr:full', '')
+
+        dist_m = round(best_dist)
+        dist_str = f"{dist_m} m" if dist_m < 1000 else f"{dist_m/1000:.1f} km"
+
+        return jsonify({
+            "success": True,
+            "hospital": {
+                "name": name,
+                "address": address,
+                "latitude": blat,
+                "longitude": blng,
+                "distance_m": dist_m,
+                "distance_str": dist_str,
+                "phone": tags.get('phone', tags.get('contact:phone', '')),
+            }
+        })
+
+    return jsonify({"success": False, "error": "No hospital found within 30 km"}), 404

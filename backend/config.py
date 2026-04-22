@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Always load .env from the project root (parent of this file's directory)
+_project_root = Path(__file__).resolve().parent.parent
+load_dotenv(_project_root / '.env')
 
 class Config:
     # Flask settings
@@ -23,6 +26,9 @@ class Config:
     # Application settings
     BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
     EMERGENCY_NUMBER = os.getenv('EMERGENCY_NUMBER', '108')
+
+    # Gemini AI
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
     
     # SMS Protocol Settings
     SMS_ENABLED = os.getenv('SMS_ENABLED', 'True') == 'True'

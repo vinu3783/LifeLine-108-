@@ -6,12 +6,21 @@ import eventlet
 eventlet.monkey_patch()
 
 import os
+import math
 import sqlite3
 import uuid
 import json
+import requests as http_requests
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, g, abort, send_from_directory
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load .env from project root
+_root = Path(__file__).resolve().parent
+load_dotenv(_root / '.env')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 
 # Get absolute path to the current directory
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -191,6 +200,11 @@ def test():
         "message": "Server is running correctly",
         "database": os.path.exists(DATABASE)
     })
+
+@app.route('/api/config')
+def get_config():
+    """Expose public config (Gemini key) to frontend"""
+    return jsonify({'geminiKey': GEMINI_API_KEY})
 
 # API Endpoints
 
@@ -585,25 +599,97 @@ def update_location():
     if not data or 'ambulance_id' not in data or 'latitude' not in data or 'longitude' not in data:
         return jsonify({"success": False, "error": "Missing required data"}), 400
     
-    # Find the ambulance
-    ambulance = query_db(
-        'SELECT * FROM ambulances WHERE ambulance_id = ?',
-        [data['ambulance_id']], 
-        one=True
-    )
-    
+    ambulance = query_db('SELECT * FROM ambulances WHERE ambulance_id = ?', [data['ambulance_id']], one=True)
     if not ambulance:
         return jsonify({"success": False, "error": "Invalid ambulance ID"}), 404
     
-    # Update location
     db = get_db()
     db.execute(
         'UPDATE ambulances SET latitude = ?, longitude = ?, last_updated = CURRENT_TIMESTAMP WHERE ambulance_id = ?',
         [data['latitude'], data['longitude'], data['ambulance_id']]
     )
     db.commit()
-    
     return jsonify({"success": True})
+
+@app.route('/api/ambulance/nearest-hospital', methods=['GET'])
+def nearest_hospital():
+    """Find nearest hospital using free OpenStreetMap Overpass API"""
+    lat = request.args.get('lat', type=float)
+    lng = request.args.get('lng', type=float)
+    if lat is None or lng is None:
+        return jsonify({"success": False, "error": "lat and lng required"}), 400
+
+    overpass_url = "https://overpass-api.de/api/interpreter"
+    _headers = {
+        'User-Agent': 'LifeLine108Plus/1.0 (emergency-response; contact@lifeline108.app)',
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+
+    def haversine(la1, lo1, la2, lo2):
+        R = 6371000
+        p = math.pi / 180
+        a = (math.sin((la2-la1)*p/2)**2 +
+             math.cos(la1*p)*math.cos(la2*p)*math.sin((lo2-lo1)*p/2)**2)
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+    for radius in [5000, 15000, 30000]:
+        query = f"""
+        [out:json][timeout:10];
+        (
+          node["amenity"="hospital"](around:{radius},{lat},{lng});
+          way["amenity"="hospital"](around:{radius},{lat},{lng});
+          node["amenity"="clinic"](around:{radius},{lat},{lng});
+          node["healthcare"="hospital"](around:{radius},{lat},{lng});
+        );
+        out center 10;
+        """
+        try:
+            resp = http_requests.post(overpass_url, data={'data': query}, headers=_headers, timeout=15)
+            resp.raise_for_status()
+            elements = resp.json().get('elements', [])
+        except http_requests.exceptions.HTTPError as exc:
+            if exc.response is not None and exc.response.status_code in (429, 504):
+                continue
+            return jsonify({"success": False, "error": f"Overpass error: {str(exc)}"}), 502
+        except Exception as exc:
+            return jsonify({"success": False, "error": f"Overpass error: {str(exc)}"}), 502
+
+        if not elements:
+            continue
+
+        best, best_dist = None, float('inf')
+        for el in elements:
+            if el['type'] == 'node':
+                elat, elng = el['lat'], el['lon']
+            else:
+                c = el.get('center', {})
+                elat, elng = c.get('lat'), c.get('lon')
+            if elat is None or elng is None:
+                continue
+            d = haversine(lat, lng, elat, elng)
+            if d < best_dist:
+                best_dist, best = d, el
+
+        if best is None:
+            continue
+
+        blat = best['lat'] if best['type'] == 'node' else best['center']['lat']
+        blng = best['lon'] if best['type'] == 'node' else best['center']['lon']
+        tags = best.get('tags', {})
+        name = tags.get('name') or tags.get('name:en') or tags.get('operator') or 'Nearest Hospital'
+        addr_parts = [tags.get('addr:housenumber',''), tags.get('addr:street',''), tags.get('addr:city','')]
+        address = ', '.join(p for p in addr_parts if p) or tags.get('addr:full','')
+        dist_m = round(best_dist)
+        dist_str = f"{dist_m} m" if dist_m < 1000 else f"{dist_m/1000:.1f} km"
+        return jsonify({"success": True, "hospital": {
+            "name": name, "address": address,
+            "latitude": blat, "longitude": blng,
+            "distance_m": dist_m, "distance_str": dist_str,
+            "phone": tags.get('phone', tags.get('contact:phone', '')),
+        }})
+
+    return jsonify({"success": False, "error": "No hospital found within 30 km"}), 404
 
 # Socket.IO event handlers
 @socketio.on('connect')

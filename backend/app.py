@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
 
 from backend.config import Config
@@ -32,6 +32,13 @@ def create_app(config_class=Config):
     @app.route('/')
     def home():
         return render_template('callcenter/index.html')
+
+    # Expose public API keys to frontend
+    @app.route('/api/config')
+    def get_config():
+        return jsonify({
+            'geminiKey': app.config.get('GEMINI_API_KEY', ''),
+        })
     
     # Socket.IO events for real-time updates
     @socketio.on('connect')
@@ -45,17 +52,17 @@ def create_app(config_class=Config):
     @socketio.on('location_shared')
     def handle_location_shared(data):
         # Broadcast to call center dashboard
-        socketio.emit('location_update', data, broadcast=True)
+        socketio.emit('location_update', data)
     
     @socketio.on('ambulance_assigned')
     def handle_ambulance_assigned(data):
         # Broadcast to call center dashboard and ambulance app
-        socketio.emit('assignment_update', data, broadcast=True)
+        socketio.emit('assignment_update', data)
     
     @socketio.on('ambulance_location_update')
     def handle_ambulance_update(data):
         # Broadcast ambulance location updates to call center
-        socketio.emit('ambulance_update', data, broadcast=True)
+        socketio.emit('ambulance_update', data)
     
     return app, socketio
 

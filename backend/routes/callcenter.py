@@ -10,43 +10,6 @@ location_service = LocationService()
 sms_service = SMSService()
 ambulance_service = AmbulanceService()
 
-@callcenter_bp.route('/initiate-call', methods=['POST'])
-def initiate_call():
-    """API endpoint for call center to initiate emergency response process"""
-    data = request.get_json()
-    
-    if not data or 'caller_phone' not in data:
-        return jsonify({"success": False, "error": "Caller phone number is required"}), 400
-    
-    # Generate location sharing link ID
-    location_link_id = location_service.generate_location_link_id()
-    
-    # Create emergency call record
-    emergency_call = EmergencyCall(
-        caller_phone=data['caller_phone'],
-        location_link_id=location_link_id,
-        status='initiated'
-    )
-    
-    db.session.add(emergency_call)
-    db.session.commit()
-    
-    # Generate location sharing URL
-    location_share_url = location_service.get_location_share_url(location_link_id)
-    
-    # Send SMS with location sharing link to the caller
-    sms_result = sms_service.send_location_share_link(
-        data['caller_phone'], 
-        location_share_url
-    )
-    
-    return jsonify({
-        "success": True,
-        "emergency_call_id": emergency_call.id,
-        "location_link_id": location_link_id,
-        "location_share_url": location_share_url,
-        "sms_sent": sms_result["success"]
-    })
 
 @callcenter_bp.route('/active-calls', methods=['GET'])
 def get_active_calls():
@@ -94,7 +57,7 @@ def complete_emergency(call_id):
     
     return jsonify({"success": True})
 
-@callcenter_bp.route('/api/callcenter/initiate-call', methods=['POST'])
+@callcenter_bp.route('/initiate-call', methods=['POST'])
 def initiate_call():
     """API endpoint for call center to initiate emergency response process"""
     data = request.get_json()
@@ -152,7 +115,7 @@ def initiate_call():
     })
 
 # Add a new endpoint to manually initiate SMS protocol for an existing call
-@callcenter_bp.route('/api/callcenter/initiate-sms-protocol/<int:call_id>', methods=['POST'])
+@callcenter_bp.route('/initiate-sms-protocol/<int:call_id>', methods=['POST'])
 def initiate_sms_protocol(call_id):
     """Manually initiate SMS-based location protocol for an existing call"""
     emergency_call = EmergencyCall.query.get(call_id)
