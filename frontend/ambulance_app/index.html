@@ -303,7 +303,7 @@
         }
         .hosp-stat-val { font-size: 16px; font-weight: 800; color: #fff; }
         .hosp-stat-lbl { font-size: 10px; color: rgba(255,255,255,.55); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 1px; }
-        .hosp-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .hosp-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .hosp-btn {
             display: flex; flex-direction: column; align-items: center; gap: 5px;
             padding: 11px 6px; border: none; border-radius: 10px;
@@ -312,6 +312,7 @@
         }
         .hosp-btn i { font-size: 16px; }
         .hosp-btn.nav-h  { background: #2563eb; color: #fff; }
+        .hosp-btn.nav-v  { background: #d97706; color: #fff; }
         .hosp-btn.done-h { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.25); }
         .hosp-btn:hover  { filter: brightness(1.12); }
         .hosp-searching {
@@ -435,7 +436,7 @@
             </div>
             <div class="emerg-body" id="emergencyDetails"></div>
             <div class="emerg-btns">
-                <button class="emerg-btn nav"    id="navigateBtn"><i class="fa-solid fa-map-location-dot"></i>Navigate</button>
+                <button class="emerg-btn nav"    id="navigateBtn" onclick="openVictimGoogleMaps()"><i class="fa-brands fa-google"></i>Open in Maps</button>
                 <button class="emerg-btn arrive" id="arrivedBtn"> <i class="fa-solid fa-location-check"></i>Arrived</button>
                 <button class="emerg-btn done"   id="completeBtn"><i class="fa-solid fa-flag-checkered"></i>Complete</button>
             </div>
@@ -759,7 +760,8 @@ function startHospitalMode() {
                 <div class="hosp-stat"><div class="hosp-stat-val">${etaStr}</div><div class="hosp-stat-lbl">ETA</div></div>
             </div>
             <div class="hosp-btns">
-                <button class="hosp-btn nav-h" id="navHospBtn"><i class="fa-solid fa-map-location-dot"></i>Directions</button>
+                <button class="hosp-btn nav-h" id="navHospBtn"><i class="fa-brands fa-google"></i>Hospital in Maps</button>
+                <button class="hosp-btn nav-v" id="navVictimFromHospBtn"><i class="fa-solid fa-person-falling-burst"></i>Victim in Maps</button>
                 <button class="hosp-btn done-h" id="doneHospBtn"><i class="fa-solid fa-flag-checkered"></i>Complete</button>
             </div>`;
 
@@ -768,7 +770,8 @@ function startHospitalMode() {
         updateHospitalRoute();
 
         // Bind buttons
-        document.getElementById('navHospBtn').addEventListener('click', openHospitalNav);
+        document.getElementById('navHospBtn').addEventListener('click', openHospitalGoogleMaps);
+        document.getElementById('navVictimFromHospBtn').addEventListener('click', openVictimGoogleMaps);
         document.getElementById('doneHospBtn').addEventListener('click', markCompleted);
 
         toast(`🏥 ${d.hospital.name} — ${d.hospital.distance_str} away`, 'success', 7000);
@@ -803,10 +806,22 @@ function updateHospitalRoute() {
     routeETA.textContent = eta<1 ? '<1 min' : eta<60 ? `${eta} min` : `${Math.floor(eta/60)}h ${eta%60}m`;
 }
 
-function openHospitalNav() {
-    if (!activeHospital||!currentPos) return;
+function openVictimGoogleMaps() {
+    if (!activeEmergency) return;
+    const lat = activeEmergency.latitude, lng = activeEmergency.longitude;
+    if (!lat || !lng) { toast('Victim location not available', 'warning'); return; }
+    // Opens Google Maps navigation from current position to victim
+    const url = currentPos
+        ? `https://www.google.com/maps/dir/${currentPos.latitude},${currentPos.longitude}/${lat},${lng}`
+        : `https://www.google.com/maps?q=${lat},${lng}`;
+    window.open(url, '_blank');
+}
+
+function openHospitalGoogleMaps() {
+    if (!activeHospital || !currentPos) return;
+    // Opens Google Maps navigation from current position to hospital
     window.open(
-        `https://www.openstreetmap.org/directions?engine=graphhopper_car&route=${currentPos.latitude}%2C${currentPos.longitude}%3B${activeHospital.latitude}%2C${activeHospital.longitude}`,
+        `https://www.google.com/maps/dir/${currentPos.latitude},${currentPos.longitude}/${activeHospital.latitude},${activeHospital.longitude}`,
         '_blank'
     );
 }
