@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="photos/teamlogo%20.jpeg" alt="TechMedics 108+ Logo" width="140" height="auto" />
+  <img src="photos/teamlogo.jpeg" alt="TechMedics 108+ Logo" width="140" height="auto" />
 
   <h1>🚑 LifeLine 108+</h1>
   <h3><em>Bridging the Gap: From Panic to Precision</em></h3>
