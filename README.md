@@ -45,8 +45,8 @@
 
 | Interface | URL |
 |-----------|-----|
-| 📞 Call Center Dashboard | [techmedics-108.onrender.com](https://techmedics-108.onrender.com/) |
-| 🚑 Ambulance Driver App | [/api/ambulance/app](https://techmedics-108.onrender.com/api/ambulance/app) |
+| 📞 Call Center Dashboard | [techmedics-108.onrender.com](https://lifeline-108.onrender.com/) |
+| 🚑 Ambulance Driver App | [/api/ambulance/app](https://lifeline-108.onrender.com/api/ambulance/app) |
 
 ---
 
